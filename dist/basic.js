@@ -7,18 +7,35 @@
 const view = () => `<div class="greet">Welcome to mino!</div>`;
 
 // declare css styles as variables!
-const styles = () => `.greet { color: red; }`;
+const greetingStyle = () => `.greet { color: blue; }`;
 
-// easily interpolate values
-const message = "Hello, world!"
-
-const greeting = (styles, message) => `<style>${styles}</style>
+// dynamically interpolate values!
+const greeting = (greetingStyle, message) => `<style>${greetingStyle()}</style>
   <p class="greet">${message}</p>`;
 
+const exampleGreeting = greeting("Hello, world!")
 
-function greet(name) {
-  return view(`${name}`);
+const pageStyles = () => `main {
+    width: 100%;
+    min-height: 100vh;
+  }`;
+
+const styleshet = (pageStyles, greetingStyles) => `${pageStyles()}
+  ${greetingStyles()}`;
+
+const container = (styleshet, content) => `<style>${styleshet()}</style>
+  <main>${content}</main>`;
+
+function render() {
+  return container(
+    greeting(message)
+  )
 }
+
+/**
+ * @param example 
+ */
+const myVar = 123;
 
 export { view, styles, greet };
 
