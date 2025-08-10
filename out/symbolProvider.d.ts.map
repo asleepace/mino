@@ -1,0 +1,1 @@
+{"version":3,"file":"symbolProvider.d.ts","sourceRoot":"","sources":["../src/symbolProvider.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,MAAM,QAAQ,CAAC;AAEjC,qBAAa,0BAA2B,YAAW,MAAM,CAAC,sBAAsB;IAC5E,sBAAsB,CAAC,QAAQ,EAAE,MAAM,CAAC,YAAY,GAAG,MAAM,CAAC,cAAc,EAAE;CA+DjF"}

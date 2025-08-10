@@ -1,0 +1,73 @@
+@prop (public, reactive) firstName = "John"
+@prop (public, reactive) lastName = "Doe"
+@prop (public, reactive) email = "john@example.com"
+@prop (public, reactive) avatarUrl = "/default-avatar.png"
+@prop (public, reactive) isOnline = false
+
+
+@template {
+  <div class="user-card {isOnline ? 'online' : 'offline'}">
+    <img src="{avatarUrl}" alt="{fullName}" class="avatar" />
+    <div class="info">
+      <h3>{fullName}</h3>
+      <p>{email}</p>
+      <button onclick="{handleContact}">Contact</button>
+    </div>
+  </div>
+} @end
+
+
+
+@style {
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    background: white;
+  }
+  
+  .user-card.online {
+    border-color: #22c55e;
+  }
+  
+  .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+} @end
+
+@prop (computed) fullName = () => `${this.firstName} ${this.lastName}`
+
+// Methods
+@method (private) handleContact() {
+  this.emit('contact-user', { 
+    name: this.fullName, 
+    email: this.email 
+  });
+} @end
+
+
+// Lifecycle
+@init() {
+  console.log('UserCard created');
+} @end
+
+@onMounted() {
+  this.render();
+  console.log('UserCard mounted to DOM');
+} @end
+
+@onUpdated(name, oldValue, newValue) {
+  if (['first-name', 'last-name', 'email'].includes(name)) {
+    this.render();
+  }
+} @end
+
+@render() {
+  this.shadowRoot.innerHTML = this.getTemplate() + this.getStyles();
+} @end

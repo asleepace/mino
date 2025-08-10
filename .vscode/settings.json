@@ -1,0 +1,87 @@
+{
+    "files.exclude": {
+      "out": false,
+      "node_modules": true,
+      ".vscode-test": true
+    },
+    "search.exclude": {
+      "out": true,
+      "node_modules": true,
+      ".vscode-test": true
+    },
+    "typescript.tsc.autoDetect": "off",
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "typescript.suggest.autoImports": true,
+    "editor.tokenColorCustomizations": {
+      "textMateRules": [
+        {
+          "scope": "keyword.modifier.mino",
+          "settings": {
+            "foreground": "#5DADE2",
+            "fontStyle": "italic"
+          }
+        },
+        {
+          "scope": "storage.modifier.custom.mino",
+          "settings": {
+            "foreground": "#85C1E9",
+            "fontStyle": "italic"
+          }
+        },
+        {
+          "scope": "keyword.control.directive.mino",
+          "settings": {
+            "foreground": "#E74C3C",
+            "fontStyle": "bold"
+          }
+        },
+        {
+          "scope": "keyword.control.lifecycle.mino",
+          "settings": {
+            "foreground": "#F39C12",
+            "fontStyle": "bold"
+          }
+        },
+        {
+          "scope": "keyword.control.directive.end.mino",
+          "settings": {
+            "foreground": "#95A5A6",
+            "fontStyle": "italic"
+          }
+        },
+        {
+          "scope": "meta.interpolation.mino",
+          "settings": {
+            "foreground": "#8E44AD"
+          }
+        },
+        {
+          "scope": "punctuation.definition.interpolation.begin.mino, punctuation.definition.interpolation.end.mino",
+          "settings": {
+            "foreground": "#E67E22",
+            "fontStyle": "bold"
+          }
+        },
+        {
+          "scope": "source.js.embedded.mino",
+          "settings": {
+            "foreground": "#27AE60"
+          }
+        },
+        {
+          "scope": "variable.other.property.mino",
+          "settings": {
+            "foreground": "#3498DB",
+            "fontStyle": "bold"
+          }
+        },
+        {
+          "scope": "entity.name.function.mino",
+          "settings": {
+            "foreground": "#9B59B6",
+            "fontStyle": "bold"
+          }
+        }
+      ]
+    }
+  }
