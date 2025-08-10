@@ -1,33 +1,8 @@
 // Test Mino syntax highlighting
 import { users } from './data.js';
 
+
 @html {
-  <p>Hello, world!<p>
+  <div><p>Hello, world!<p></div>
 }
-
-@html myItem {
-  <div class="flex"></div>
-}
-
-@html componentStyle(args) {
-  <div class="container">
-    <p>{args}</p>
-  </div>  
-}
-
-@css myStyleSheet {
-  :host {
-    flex: 1;
-  }
-}
-
-@css styleSheet(args) {
-  :host {
-    background-color: red;
-  }
-}
-
-const item = componentStyle()
-
-
 

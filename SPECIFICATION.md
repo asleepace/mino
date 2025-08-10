@@ -52,6 +52,32 @@ CSS blocks define reusable stylesheets with optional parameters:
     opacity: 0.8;
   }
 }
+
+@html customButton {
+  <button class="theme-button">
+    Click me!
+  </button>
+}
+
+@html customButton(message) {
+  <button class="theme-button">
+    ${message}
+  </button>
+}
+
+@html container(style, children) {
+  <div class="container">
+    <style>${style}</style>
+    ${children}
+  </div>
+}
+
+function render() {
+  return container(
+    buttonStyles, 
+    customButton('Hello')
+  )
+}
 ```
 
 ### HTML Blocks
@@ -267,12 +293,13 @@ interface User {
 ### From v1.0 (Variable Assignment Syntax)
 
 ```mino
-// v1.0 - Variable assignment
-const styles = @css {
-  .btn { color: red; }
+
+@html container {
+  <div class="container">
+
+  </div>
 }
 
-// v2.0 - Block declaration  
 @css styles() {
   .btn { color: red; }
 }
@@ -284,7 +311,6 @@ Planned tooling to convert existing Mino v1.0 codebases to v2.0 block syntax.
 
 ## Version History
 
-- **v1.0**: Variable assignment syntax (`const x = @css {}`)
 - **v2.0**: Block-level syntax with explicit parameters (`@css name() {}`)
 
 ## Future Enhancements
@@ -294,3 +320,4 @@ Planned tooling to convert existing Mino v1.0 codebases to v2.0 block syntax.
 - **Preprocessing**: Sass-like features for CSS blocks
 - **Optimization**: Compile-time CSS/HTML minification
 - **Web Components**: Direct compilation to custom elements
+- **vNEXT**: TODO: variable assignment syntax (`const x = @css {}`)
