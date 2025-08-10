@@ -1,340 +1,507 @@
-# Mino
-A simple meta language used to generate vanilla JS based web components.
+# Mino Language Technical Specification
 
-# Component Language Specification v1.4.0
+**Version**: 1.0.4  
+**File Extension**: `.mino`  
+**Target**: Vanilla Web Components with zero dependencies
 
-## Core Philosophy: Maximum Simplicity
+## Overview
 
-Focus on the essentials: **properties**, **lifecycle**, **HTML**, **CSS**, **JS**. Everything else is convenience via aliases and directives.
+Mino is a component definition language that compiles to vanilla JavaScript Web Components. It focuses on simplicity, VS Code integration, and infinite extensibility through aliases and directives.
 
-## Unified Syntax (Simplified)
+## Reserved Keywords
 
 ```
-[@directive] [(...modifiers)] [name] [= value]
-  [content]
-[@end]
+// Core Directives
+@alias       // Remapping and composition
+@directive   // Code generation functions
+@method      // Component methods
+
+// Standard Library
+@prop        // Component properties
+@style       // CSS styles
+@template    // HTML template
+@script      // JavaScript code
+
+// Lifecycle Methods (Standard Library)
+@init        // Constructor logic
+@onMounted   // connectedCallback
+@onUpdated   // attributeChangedCallback
+@onUnmounted // disconnectedCallback
+@render      // Render method
+
+// Modifier Keywords
+public       // Exposed property/method
+private      // Internal only
+static       // Class-level
+reactive     // Triggers re-render
+computed     // Calculated property
+async        // Async method
 ```
 
-**Removed**: Type hints (`:Type`) - unnecessary complexity for web components where most attributes are strings.
+## Allowed Tokens
 
-## Only 3 Core Constructs
+### Directive Types
+```
+@alias (type)      // Type aliases
+@alias (fn)        // Function definitions
+@alias (modifier)  // Modifier composition
+@alias (directive) // Directive pipelines
+@alias (token)     // Context-aware remapping
+```
 
-### 1. `@alias` - Remapping, composition, and expansion
+### Modifier Categories
+```
+// Visibility
+public, private, static
+
+// Reactivity  
+reactive, computed
+
+// Execution
+async, sync
+
+// Validation
+required, optional
+
+// Scoping
+global, local, scoped
+
+// Custom (user-definable via @directive)
+kebab, validate, transform, etc.
+```
+
+### Built-in Functions
+```
+// Event helpers
+emit(event, data)
+on(event, handler)
+off(event, handler)
+
+// DOM helpers  
+query(selector)
+queryAll(selector)
+addClass(className)
+removeClass(className)
+
+// Utility helpers
+debounce(fn, delay)
+throttle(fn, delay)
+```
+
+## Syntax Specification
+
+### Inline Directive Syntax
+```
+@directive [(...modifiers)] name = value
+```
+
+**Examples:**
 ```objc
+@prop name = "John Doe"
+@prop (reactive) count = 0
+@prop (public, reactive) isVisible = true
+@prop (computed) fullName = () => `${this.firstName} ${this.lastName}`
+```
+
+### Block Directive Syntax
+```
+@directive [(...modifiers)] [name[(parameters)]] {
+  content
+}
+@end
+```
+
+**Examples:**
+```objc
+@style {
+  .button { background: blue; }
+}
+@end
+
+@template {
+  <div class="component">{title}</div>
+}
+@end
+
+@method (private) handleClick(event) {
+  console.log('Clicked!');
+  this.emit('click', { target: event.target });
+}
+@end
+
+@onMounted {
+  console.log('Component mounted');
+  this.render();
+}
+@end
+```
+
+### Alias Syntax
+```
+@alias [type] target = source
+
 // Simple remapping
 @alias onClick = 'onclick'
 
-// Modifier composition  
-@alias (modifier) default = ['public', 'kebab', 'reactive']
+// Type definitions
+@alias (type) string = String
+@alias (type) email = (str) => validateEmail(str)
+
+// Modifier composition
+@alias (modifier) default = ['public', 'reactive']
 
 // Function definitions
-@alias (fn) slugify = (str) => str.toLowerCase().replace(/\s+/g, '-')
+@alias (fn) emit = (event, data) => `this.dispatchEvent(new CustomEvent('${event}', {detail: ${JSON.stringify(data)}}))`
 
-// Directive expansion (pipeline left→right)
-@alias (directive) smartProp = ['public', 'kebab', 'reactive', 'validate']
+// Directive pipelines
+@alias (directive) smartProp = ['public', 'reactive', 'kebab', 'validate']
 
-// Token remapping for different contexts
-@alias (token) component.name = 'customElements.define'
-@alias (token) style.scope = 'this.shadowRoot'
+// Token remapping
+@alias (token) component.define = 'customElements.define'
 ```
 
-### 2. `@directive` - Code generation functions
-```objc
+### Directive Definition Syntax
+```
 @directive directiveName(ast) {
+  // JavaScript code generation
   return generatedCode;
 }
 @end
 ```
 
-### 3. `@[anything]` - User-defined constructs
-```objc
-@prop name = value
-@style { css } @end  
-@script { js } @end
-@component { html } @end
-@lifecycle connectedCallback { js } @end
-```
+## AST Structure
 
-All user constructs are processed by directives in a left→right pipeline.
-
-## Language Features for VS Code
-
-### CSS Syntax Highlighting
-```objc
-@style {
-  /* CSS syntax highlighting here */
-  .button {
-    background: blue;
-    border: none;
-  }
-}
-@end
-```
-
-### HTML Syntax Highlighting  
-```objc
-@component {
-  <!-- HTML syntax highlighting here -->
-  <div class="card">
-    <h2>{title}</h2>
-    <button onclick="{handleClick}">Click me</button>
-  </div>
-}
-@end
-```
-
-### JavaScript Syntax Highlighting
-```objc
-@script {
-  // JavaScript syntax highlighting here
-  const handleClick = () => {
-    console.log('Clicked!');
-    this.dispatchEvent(new CustomEvent('click'));
+```typescript
+interface MinoAST {
+  type: 'inline' | 'block';
+  directive: string;           // @prop, @style, @method, etc.
+  modifiers: string[];         // ['public', 'reactive']
+  name?: string;               // property/method name
+  parameters?: string[];       // method parameters
+  value?: any;                 // inline value
+  content?: string;            // block content
+  context: {
+    componentName: string;
+    aliases: Map<string, any>;
+    directives: Map<string, Function>;
+    reservedKeywords: Set<string>;
   };
 }
-@end
-
-@lifecycle connectedCallback {
-  // JavaScript syntax highlighting here
-  this.render();
-  this.setupEventListeners();
-}
-@end
 ```
 
-## Enhanced @alias Capabilities
-
-### Function Definitions
-```objc
-@alias (fn) validate = (value, rules) => {
-  // Validation logic
-  if (!rules.required && !value) return true;
-  if (rules.minLength && value.length < rules.minLength) return false;
-  return true;
-}
-
-@alias (fn) emit = (eventName, detail) => {
-  return `this.dispatchEvent(new CustomEvent('${eventName}', { detail: ${JSON.stringify(detail)}, bubbles: true }));`;
-}
-```
-
-### Directive Pipeline Expansion
-```objc
-// Define a pipeline of directives
-@alias (directive) smartProp = ['public', 'kebab', 'reactive', 'validate']
-
-// Usage - all directives run left→right
-@prop (smartProp) userName = "guest"
-
-// Equivalent to:
-@prop (public, kebab, reactive, validate) userName = "guest"
-```
-
-### Token Context Remapping
-```objc
-// Different behavior based on context
-@alias (token) define.component = 'customElements.define'
-@alias (token) define.property = 'Object.defineProperty'
-@alias (token) scope.style = 'this.shadowRoot.adoptedStyleSheets'
-@alias (token) scope.global = 'document.head'
-```
-
-## Minimal Standard Library
-
-### Core Directives
-```objc
-@directive public(ast) {
-  return `static get observedAttributes() { return ['${kebabCase(ast.name)}']; }`;
-}
-
-@directive reactive(ast) {
-  return `
-    set ${ast.name}(value) {
-      this._${ast.name} = value;
-      this.requestUpdate();
-    }
-    get ${ast.name}() { return this._${ast.name} ?? ${ast.value}; }
-  `;
-}
-
-@directive kebab(ast) {
-  // Auto-generate kebab-case attribute mapping
-  const attrName = ast.name.replace(/([A-Z])/g, '-$1').toLowerCase();
-  return `// Attribute: ${attrName}`;
-}
-
-@directive validate(ast) {
-  return `
-    set ${ast.name}(value) {
-      if (!this.validate(value, ${JSON.stringify(ast.validationRules)})) {
-        throw new Error('Validation failed for ${ast.name}');
-      }
-      this._${ast.name} = value;
-    }
-  `;
-}
-```
-
-### Convenience Aliases
-```objc
-// Common patterns
-@alias (directive) default = ['public', 'reactive', 'kebab']
-@alias (directive) internal = ['private']
-@alias (directive) computed = ['getter']
-
-// Function helpers
-@alias (fn) emit = (event, data) => `this.dispatchEvent(new CustomEvent('${event}', {detail: ${JSON.stringify(data)}}))`
-@alias (fn) query = (selector) => `this.shadowRoot.querySelector('${selector}')`
-@alias (fn) queryAll = (selector) => `this.shadowRoot.querySelectorAll('${selector}')`
-```
-
-## Complete Example
+## Standard Component Structure
 
 ```objc
-// UserCard.comp
+// UserCard.mino
 
-@component {
+@template {
   <div class="user-card {isOnline ? 'online' : 'offline'}">
-    <h3>{fullName}</h3>
-    <p>{email}</p>
-    <button onclick="{handleContact}">Contact</button>
+    <img src="{avatarUrl}" alt="{fullName}" class="avatar" />
+    <div class="info">
+      <h3>{fullName}</h3>
+      <p>{email}</p>
+      <button onclick="{handleContact}">Contact</button>
+    </div>
   </div>
 }
 @end
 
 @style {
   .user-card {
-    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     padding: 1rem;
+    border: 1px solid #e1e1e1;
     border-radius: 8px;
+    background: white;
   }
-  .user-card.online { border-color: green; }
+  
+  .user-card.online {
+    border-color: #22c55e;
+  }
+  
+  .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 }
 @end
 
-// Properties with smart defaults
-@prop (default) firstName = "John"
-@prop (default) lastName = "Doe" 
-@prop (default) email = "john@example.com"
-@prop (default) isOnline = false
+// Properties
+@prop (public, reactive) firstName = "John"
+@prop (public, reactive) lastName = "Doe"
+@prop (public, reactive) email = "john@example.com"
+@prop (public, reactive) avatarUrl = "/default-avatar.png"
+@prop (public, reactive) isOnline = false
 
-// Computed property
+// Computed properties
 @prop (computed) fullName = () => `${this.firstName} ${this.lastName}`
 
-// Event handlers
-@script {
-  handleContact() {
-    this.emit('contact', { name: this.fullName, email: this.email });
-  }
+// Methods
+@method (private) handleContact() {
+  this.emit('contact-user', { 
+    name: this.fullName, 
+    email: this.email 
+  });
 }
 @end
 
 // Lifecycle
-@lifecycle connectedCallback {
+@init {
+  console.log('UserCard created');
+}
+@end
+
+@onMounted {
   this.render();
+  console.log('UserCard mounted to DOM');
+}
+@end
+
+@onUpdated(name, oldValue, newValue) {
+  if (['first-name', 'last-name', 'email'].includes(name)) {
+    this.render();
+  }
+}
+@end
+
+@render {
+  this.shadowRoot.innerHTML = this.getTemplate() + this.getStyles();
 }
 @end
 ```
 
-## VS Code Language Extension Structure
+## Compilation Process
 
-```json
-{
-  "name": "component-lang",
-  "contributes": {
-    "languages": [{
-      "id": "component",
-      "extensions": [".comp"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "component", 
-      "scopeName": "source.component",
-      "path": "./syntaxes/component.tmLanguage.json",
-      "embeddedLanguages": {
-        "meta.style.component": "css",
-        "meta.script.component": "javascript", 
-        "meta.component.component": "html"
-      }
-    }]
+### Phase 1: Lexical Analysis
+1. **Tokenize** source code into tokens
+2. **Identify** directive boundaries (`@directive` ... `@end`)
+3. **Extract** modifiers, names, parameters, values, content
+4. **Validate** against reserved keywords and allowed tokens
+5. **Build** initial AST structure
+
+### Phase 2: Alias Resolution  
+1. **Parse** all `@alias` definitions first
+2. **Build** alias registry by type (`type`, `fn`, `modifier`, `directive`, `token`)
+3. **Expand** modifier aliases (`@prop (default)` → `@prop (public, reactive)`)
+4. **Resolve** function aliases in values and content
+5. **Apply** token remapping based on context
+
+### Phase 3: Macro Expansion
+1. **Process** `@directive` definitions 
+2. **Register** custom directives in directive registry
+3. **Validate** directive functions (must return string or null)
+4. **Prepare** directive execution environment
+
+### Phase 4: Directive Pipeline Processing
+1. **Group** blocks by directive type (`@prop`, `@style`, `@method`, etc.)
+2. **Process** modifiers left-to-right as pipeline
+3. **Execute** each directive function with AST context
+4. **Collect** generated code fragments
+5. **Handle** dependencies between directives
+
+### Phase 5: Component Structure Generation
+1. **Extract** component name from filename or declaration
+2. **Generate** Web Component class structure
+3. **Combine** property definitions with getters/setters
+4. **Merge** method definitions 
+5. **Integrate** lifecycle methods
+6. **Process** template with interpolation syntax
+
+### Phase 6: Code Generation & Optimization
+1. **Generate** `observedAttributes` from reactive properties
+2. **Create** render method with template + styles
+3. **Wire** event handlers with proper binding
+4. **Add** JSDoc comments for TypeScript support
+5. **Generate** `customElements.define()` call
+6. **Optimize** generated code (remove duplicates, minify if requested)
+
+### Phase 7: Output Generation
+1. **Combine** all generated code into single JavaScript file
+2. **Add** source maps for debugging
+3. **Validate** generated JavaScript syntax
+4. **Format** code for readability
+5. **Write** output file with `.js` extension
+
+## Generated Output Structure
+
+```javascript
+/**
+ * UserCard Web Component
+ * Generated from UserCard.mino
+ * @element user-card
+ */
+class UserCard extends HTMLElement {
+  
+  // Generated properties
+  /** @type {string} */
+  #firstName = "John";
+  
+  /** @type {string} */  
+  #lastName = "Doe";
+  
+  // Property getters/setters with reactivity
+  get firstName() { return this.#firstName; }
+  set firstName(value) {
+    const oldValue = this.#firstName;
+    this.#firstName = String(value);
+    if (oldValue !== value) this.requestUpdate();
+  }
+  
+  // Computed properties
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+  
+  // Observed attributes
+  static get observedAttributes() {
+    return ['first-name', 'last-name', 'email', 'avatar-url', 'is-online'];
+  }
+  
+  // Constructor (from @init)
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    console.log('UserCard created');
+  }
+  
+  // Lifecycle methods
+  connectedCallback() {
+    this.render();
+    console.log('UserCard mounted to DOM');
+  }
+  
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (['first-name', 'last-name', 'email'].includes(name)) {
+      this.render();
+    }
+  }
+  
+  // Generated methods
+  handleContact() {
+    this.dispatchEvent(new CustomEvent('contact-user', {
+      detail: { name: this.fullName, email: this.email },
+      bubbles: true
+    }));
+  }
+  
+  // Render method
+  render() {
+    this.shadowRoot.innerHTML = this.getTemplate() + this.getStyles();
+  }
+  
+  getTemplate() {
+    return `
+      <div class="user-card ${this.isOnline ? 'online' : 'offline'}">
+        <img src="${this.avatarUrl}" alt="${this.fullName}" class="avatar" />
+        <div class="info">
+          <h3>${this.fullName}</h3>
+          <p>${this.email}</p>
+          <button onclick="this.getRootNode().host.handleContact()">Contact</button>
+        </div>
+      </div>
+    `;
+  }
+  
+  getStyles() {
+    return `
+      <style>
+        .user-card {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem;
+          border: 1px solid #e1e1e1;
+          border-radius: 8px;
+          background: white;
+        }
+        
+        .user-card.online {
+          border-color: #22c55e;
+        }
+        
+        .avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+      </style>
+    `;
+  }
+  
+  // Utility methods (from @alias (fn))
+  emit(eventName, detail) {
+    this.dispatchEvent(new CustomEvent(eventName, { detail, bubbles: true }));
   }
 }
+
+// Register component
+customElements.define('user-card', UserCard);
+
+export default UserCard;
 ```
 
-## TextMate Grammar (Simplified)
+## Error Handling
+
+### Compile-Time Errors
+- **Syntax errors**: Invalid directive syntax
+- **Reserved keyword conflicts**: Using reserved words incorrectly  
+- **Circular dependencies**: Aliases referencing each other
+- **Invalid directives**: Unknown directive names
+- **Type mismatches**: Incorrect modifier usage
+
+### Runtime Error Prevention
+- **Property validation**: Type checking via aliases
+- **Method binding**: Automatic context binding for event handlers
+- **Lifecycle management**: Proper cleanup in disconnectedCallback
+- **Memory leaks**: Event listener cleanup
+
+## VS Code Integration
+
+### Language Configuration
 ```json
 {
-  "patterns": [
-    {
-      "name": "meta.style.component",
-      "begin": "@style\\s*\\{",
-      "end": "\\}\\s*@end",
-      "patterns": [{"include": "source.css"}]
-    },
-    {
-      "name": "meta.script.component", 
-      "begin": "@(script|lifecycle)\\s*[^{]*\\{",
-      "end": "\\}\\s*@end",
-      "patterns": [{"include": "source.js"}]
-    },
-    {
-      "name": "meta.component.component",
-      "begin": "@component\\s*\\{", 
-      "end": "\\}\\s*@end",
-      "patterns": [{"include": "text.html.basic"}]
-    }
+  "comments": {
+    "lineComment": "//",
+    "blockComment": ["/*", "*/"]
+  },
+  "brackets": [
+    ["{", "}"],
+    ["(", ")"]
+  ],
+  "autoClosingPairs": [
+    ["{", "}"],
+    ["(", ")"],
+    ["\"", "\""],
+    ["'", "'"]
   ]
 }
 ```
 
-## Compilation Pipeline
+### TextMate Grammar Highlights
+- **Directives**: `@prop`, `@style`, `@method` in blue
+- **Modifiers**: `(public, reactive)` in purple  
+- **CSS blocks**: Full CSS syntax highlighting
+- **HTML blocks**: Full HTML syntax highlighting  
+- **JS blocks**: Full JavaScript syntax highlighting
+- **Interpolations**: `{expression}` in orange
 
-### Phase 1: Alias Resolution
-```javascript
-// Expand directive aliases
-if (aliasType === 'directive') {
-  modifiers = modifiers.flatMap(mod => aliases.get(mod) || [mod]);
-}
+## Performance Considerations
 
-// Expand function aliases  
-if (aliasType === 'fn') {
-  // Replace function calls with implementations
-}
-```
+1. **Compilation Speed**: Single-pass parsing with minimal backtracking
+2. **Generated Code Size**: Optimize for small bundle size
+3. **Runtime Performance**: Minimal overhead for reactivity system
+4. **Memory Usage**: Efficient property storage with private fields
+5. **Development Experience**: Fast incremental compilation for live reload
 
-### Phase 2: Directive Pipeline  
-```javascript
-// Process modifiers left→right as pipeline
-modifiers.reduce((ast, modifier) => {
-  if (directives.has(modifier)) {
-    ast.generatedCode.push(directives.get(modifier)(ast));
-  }
-  return ast;
-}, initialAST);
-```
+## Future Extensions
 
-### Phase 3: Code Generation
-```javascript
-// Combine all generated code into Web Component
-generateWebComponent(processedAST);
-```
-
-## Edge Cases Handled
-
-1. **VS Code Syntax Highlighting**: Embedded languages for CSS/JS/HTML
-2. **Alias Functions**: Full function definitions via `@alias (fn)`
-3. **No Type Hints**: Simplified - web components are mostly strings anyway
-4. **Token Remapping**: Context-aware aliases for different situations
-5. **Directive Expansion**: Pipeline processing left→right
-6. **Flat Modifier Lists**: No nesting complexity
-
-## Benefits
-
-1. **Minimal Core**: Only 3 constructs (`@alias`, `@directive`, `@[custom]`)
-2. **VS Code Ready**: Built for syntax highlighting out of the box
-3. **Pipeline Processing**: Predictable left→right modifier processing
-4. **Infinite Extensibility**: Aliases and directives handle all edge cases
-5. **Web Component Native**: Designed specifically for web components
-6. **Zero Magic**: Everything is explicit and traceable
-
-This design prioritizes **simplicity** and **VS Code integration** while maintaining infinite extensibility through the alias/directive system.
+1. **TypeScript Support**: Generate `.d.ts` files
+2. **CSS Processors**: Sass, Less, PostCSS integration
+3. **Testing Utilities**: Built-in test helpers
+4. **Documentation**: Auto-generate docs from comments
+5. **Bundler Plugins**: Webpack, Vite, Rollup integration
