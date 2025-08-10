@@ -27,11 +27,11 @@ export function activate(context: vscode.ExtensionContext) {
             switch (word) {
                 case '@css':
                     return new vscode.Hover(
-                        new vscode.MarkdownString('**Mino CSS Block**\n\nDefine reusable CSS styles with optional parameters.\n\n```mino\n@css buttonStyles(color) {\n  .btn { background: ${color}; }\n}\n```')
+                        new vscode.MarkdownString('**Mino CSS Block**\n\nDefine reusable CSS styles with variable assignment.\n\n```mino\nconst styles = @css {\n  .btn { background: ${color}; }\n}\n```')
                     );
                 case '@html':
                     return new vscode.Hover(
-                        new vscode.MarkdownString('**Mino HTML Block**\n\nDefine reusable HTML templates with parameters and `${variable}` interpolation.\n\n```mino\n@html userCard(user) {\n  <div>${user.name}</div>\n}\n```')
+                        new vscode.MarkdownString('**Mino HTML Block**\n\nDefine reusable HTML templates with `${variable}` interpolation.\n\n```mino\nconst template = @html {\n  <div>${content}</div>\n}\n```')
                     );
                 default:
                     return undefined;
@@ -42,24 +42,37 @@ export function activate(context: vscode.ExtensionContext) {
     // Register a completion provider for Mino directives
     const completionProvider = vscode.languages.registerCompletionItemProvider('mino', {
         provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[]> {
-            // FIX: Use substring instead of deprecated substr
             const linePrefix = document.lineAt(position).text.substring(0, position.character);
             
-            if (!linePrefix.endsWith('@')) {
-                return undefined;
+            // Check for variable assignment context
+            if (linePrefix.match(/\b(const|let|var)\s+\w+\s*=\s*@?$/)) {
+                const cssCompletion = new vscode.CompletionItem('@css', vscode.CompletionItemKind.Keyword);
+                cssCompletion.insertText = new vscode.SnippetString('@css {\n\t${1:/* CSS styles */}\n}');
+                cssCompletion.documentation = new vscode.MarkdownString('Create a CSS block with template interpolation');
+
+                const htmlCompletion = new vscode.CompletionItem('@html', vscode.CompletionItemKind.Keyword);
+                htmlCompletion.insertText = new vscode.SnippetString('@html {\n\t${1:<!-- HTML content -->}\n}');
+                htmlCompletion.documentation = new vscode.MarkdownString('Create an HTML block with template interpolation');
+
+                return [cssCompletion, htmlCompletion];
             }
 
-            const cssCompletion = new vscode.CompletionItem('@css', vscode.CompletionItemKind.Keyword);
-            cssCompletion.insertText = new vscode.SnippetString('css ${1:styleName}(${2:params}) {\n\t${3:/* CSS styles */}\n}');
-            cssCompletion.documentation = new vscode.MarkdownString('Create a CSS block with named parameters');
+            // Provide full variable assignment snippets when typing 'const', 'let', or 'var'
+            if (linePrefix.match(/\b(const|let|var)\s*$/)) {
+                const cssVariableCompletion = new vscode.CompletionItem('CSS Block', vscode.CompletionItemKind.Snippet);
+                cssVariableCompletion.insertText = new vscode.SnippetString('const ${1:styles} = @css {\n\t${2:/* CSS styles */}\n}');
+                cssVariableCompletion.documentation = new vscode.MarkdownString('Create a CSS block variable');
 
-            const htmlCompletion = new vscode.CompletionItem('@html', vscode.CompletionItemKind.Keyword);
-            htmlCompletion.insertText = new vscode.SnippetString('html ${1:templateName}(${2:params}) {\n\t${3:<!-- HTML content -->}\n}');
-            htmlCompletion.documentation = new vscode.MarkdownString('Create an HTML block with named parameters');
+                const htmlVariableCompletion = new vscode.CompletionItem('HTML Block', vscode.CompletionItemKind.Snippet);
+                htmlVariableCompletion.insertText = new vscode.SnippetString('const ${1:template} = @html {\n\t${2:<!-- HTML content -->}\n}');
+                htmlVariableCompletion.documentation = new vscode.MarkdownString('Create an HTML block variable');
 
-            return [cssCompletion, htmlCompletion];
+                return [cssVariableCompletion, htmlVariableCompletion];
+            }
+
+            return undefined;
         }
-    }, '@');
+    }, '@', 't', 'l', 'c'); // Trigger on @, const/let keywords
 
     // Register diagnostic provider for syntax validation
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('mino');
@@ -73,81 +86,103 @@ export function activate(context: vscode.ExtensionContext) {
         const text = document.getText();
         const lines = text.split('\n');
         
-        // Track declared block names to detect duplicates
-        const declaredBlocks = new Map<string, number>();
+        // Track declared block variables to detect duplicates
+        const declaredVariables = new Map<string, number>();
         
-        // FIX: More robust regex with word boundaries and better parameter parsing
-        const blockPattern = /\b@(css|html)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^)]*)\)\s*\{/g;
+        // Updated regex for variable assignment syntax: const name = @css { ... }
+        const blockPattern = /\b(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*@(css|html)\s*\{/g;
         
         // Check for valid block declarations
         let match;
         while ((match = blockPattern.exec(text)) !== null) {
-            const [fullMatch, blockType, blockName, params] = match;
+            const [fullMatch, varType, varName, blockType] = match;
             const startPos = document.positionAt(match.index);
             const endPos = document.positionAt(match.index + fullMatch.length);
             
-            // Check for duplicate block names
-            if (declaredBlocks.has(blockName)) {
-                const firstDeclarationLine = declaredBlocks.get(blockName)!;
+            // Check for duplicate variable names
+            if (declaredVariables.has(varName)) {
+                const firstDeclarationLine = declaredVariables.get(varName)!;
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(startPos, endPos),
-                    `Duplicate block name '${blockName}'. First declared on line ${firstDeclarationLine + 1}.`,
+                    `Duplicate variable name '${varName}'. First declared on line ${firstDeclarationLine + 1}.`,
                     vscode.DiagnosticSeverity.Error
                 );
                 diagnostics.push(diagnostic);
             } else {
-                declaredBlocks.set(blockName, startPos.line);
-            }
-            
-            // Validate parameter syntax
-            if (params.trim()) {
-                const paramList = params.split(',').map(p => p.trim()).filter(p => p);
-                for (const param of paramList) {
-                    if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(param)) {
-                        const diagnostic = new vscode.Diagnostic(
-                            new vscode.Range(startPos, endPos),
-                            `Invalid parameter name '${param}'. Must be a valid JavaScript identifier.`,
-                            vscode.DiagnosticSeverity.Error
-                        );
-                        diagnostics.push(diagnostic);
-                    }
-                }
+                declaredVariables.set(varName, startPos.line);
             }
         }
         
-        // Check for invalid block identifiers
-        const invalidIdentifierPattern = /\b@(css|html)\s+([^a-zA-Z_$]|\d)/g;
+        // Check for invalid variable names
+        const invalidVariablePattern = /\b(const|let|var)\s+([^a-zA-Z_$]|\d\w*)\s*=\s*@(css|html)/g;
         let invalidMatch;
-        while ((invalidMatch = invalidIdentifierPattern.exec(text)) !== null) {
+        while ((invalidMatch = invalidVariablePattern.exec(text)) !== null) {
             const startPos = document.positionAt(invalidMatch.index);
             const endPos = document.positionAt(invalidMatch.index + invalidMatch[0].length);
             
             const diagnostic = new vscode.Diagnostic(
                 new vscode.Range(startPos, endPos),
-                'Block names must be valid JavaScript identifiers (start with letter, $, or _)',
+                'Variable names must be valid JavaScript identifiers (start with letter, $, or _)',
                 vscode.DiagnosticSeverity.Error
             );
             diagnostics.push(diagnostic);
         }
         
-        // Check for nested blocks (not allowed in v2.0)
+        // Check for invalid @css/@html usage: allow bare blocks and assignment blocks
+        const invalidBlockPattern = /@(css|html)(?!\s*\{|\s*[a-zA-Z])/g;
+        let invalidMatch2;
+        while ((invalidMatch2 = invalidBlockPattern.exec(text)) !== null) {
+            // If not followed by '{' or an identifier, flag usage
+                const startPos = document.positionAt(invalidMatch2.index);
+                const endPos = document.positionAt(invalidMatch2.index + invalidMatch2[0].length);
+                
+                const diagnostic = new vscode.Diagnostic(
+                    new vscode.Range(startPos, endPos),
+                    `@${invalidMatch2[1]} must be followed by '{' or used in variable assignment`,
+                    vscode.DiagnosticSeverity.Error
+                );
+                diagnostics.push(diagnostic);
+        }
+        
+        // Check for nested variable-declared blocks (not allowed). Bare blocks could appear inside JS blocks; keep rule for assignments only.
         lines.forEach((line, lineIndex) => {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('@css') || trimmed.startsWith('@html')) {
-                // Check if this line is indented (suggesting nesting)
-                if (line.match(/^\s+@(css|html)/)) {
-                    const startPos = new vscode.Position(lineIndex, 0);
-                    const endPos = new vscode.Position(lineIndex, line.length);
-                    
-                    const diagnostic = new vscode.Diagnostic(
-                        new vscode.Range(startPos, endPos),
-                        'Nested blocks are not allowed. Blocks must be declared at the top level.',
-                        vscode.DiagnosticSeverity.Error
-                    );
-                    diagnostics.push(diagnostic);
-                }
+            if (line.match(/^\s+(const|let|var)\s+\w+\s*=\s*@(css|html)/)) {
+                const startPos = new vscode.Position(lineIndex, 0);
+                const endPos = new vscode.Position(lineIndex, line.length);
+                
+                const diagnostic = new vscode.Diagnostic(
+                    new vscode.Range(startPos, endPos),
+                    'Nested blocks are not allowed. Blocks must be declared at the top level.',
+                    vscode.DiagnosticSeverity.Error
+                );
+                diagnostics.push(diagnostic);
             }
         });
+
+        // Check for unmatched braces in blocks
+        const bracePattern = /\b(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*@(css|html)\s*\{/g;
+        let braceMatch;
+        while ((braceMatch = bracePattern.exec(text)) !== null) {
+            const blockStart = braceMatch.index + braceMatch[0].length - 1; // Position of opening brace
+            let braceCount = 1;
+            let pos = blockStart + 1;
+            
+            while (pos < text.length && braceCount > 0) {
+                if (text[pos] === '{') braceCount++;
+                else if (text[pos] === '}') braceCount--;
+                pos++;
+            }
+            
+            if (braceCount > 0) {
+                const startPos = document.positionAt(braceMatch.index);
+                const diagnostic = new vscode.Diagnostic(
+                    new vscode.Range(startPos, startPos),
+                    `Unmatched opening brace in ${braceMatch[3]} block '${braceMatch[2]}'`,
+                    vscode.DiagnosticSeverity.Error
+                );
+                diagnostics.push(diagnostic);
+            }
+        }
 
         diagnosticCollection.set(document.uri, diagnostics);
     };
@@ -173,8 +208,8 @@ export function activate(context: vscode.ExtensionContext) {
             const word = document.getText(range);
             const text = document.getText();
             
-            // FIX: Improved regex with word boundaries
-            const blockPattern = new RegExp(`\\b@(css|html)\\s+(${word})\\s*\\(`, 'g');
+            // Look for variable declarations: const word = @css/@html
+            const blockPattern = new RegExp(`\\b(const|let|var)\\s+(${word})\\s*=\\s*@(css|html)`, 'g');
             const match = blockPattern.exec(text);
             
             if (match) {
@@ -187,6 +222,41 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
+    // Register a code action provider for common fixes
+    const codeActionProvider = vscode.languages.registerCodeActionsProvider('mino', {
+        provideCodeActions(document: vscode.TextDocument, range: vscode.Range, context: vscode.CodeActionContext, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CodeAction[]> {
+            const actions: vscode.CodeAction[] = [];
+            
+            for (const diagnostic of context.diagnostics) {
+                if (diagnostic.message.includes('@css must be used in variable assignment')) {
+                    const action = new vscode.CodeAction('Wrap in variable assignment', vscode.CodeActionKind.QuickFix);
+                    action.edit = new vscode.WorkspaceEdit();
+                    
+                    const line = document.lineAt(diagnostic.range.start);
+                    const newText = `const styles = @css {`;
+                    const range = new vscode.Range(diagnostic.range.start, diagnostic.range.start);
+                    action.edit.replace(document.uri, range, newText);
+                    
+                    actions.push(action);
+                }
+                
+                if (diagnostic.message.includes('@html must be used in variable assignment')) {
+                    const action = new vscode.CodeAction('Wrap in variable assignment', vscode.CodeActionKind.QuickFix);
+                    action.edit = new vscode.WorkspaceEdit();
+                    
+                    const line = document.lineAt(diagnostic.range.start);
+                    const newText = `const template = @html {`;
+                    const range = new vscode.Range(diagnostic.range.start, diagnostic.range.start);
+                    action.edit.replace(document.uri, range, newText);
+                    
+                    actions.push(action);
+                }
+            }
+            
+            return actions;
+        }
+    });
+
     // Add all subscriptions
     context.subscriptions.push(
         formatCommand,
@@ -195,7 +265,8 @@ export function activate(context: vscode.ExtensionContext) {
         diagnosticCollection,
         onDocumentChange,
         onDocumentOpen,
-        definitionProvider
+        definitionProvider,
+        codeActionProvider
     );
 }
 

@@ -2,7 +2,7 @@
   "name": "mino-lang",
   "displayName": "Mino Language Support",
   "description": "Syntax highlighting for Mino language with embedded HTML and CSS",
-  "version": "1.0.8",
+  "version": "1.0.89",
   "publisher": "asleepace",
   "engines": {
     "vscode": "^1.74.0"
@@ -31,6 +31,16 @@
         "language": "mino",
         "scopeName": "source.mino",
         "path": "./syntaxes/mino.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.mino.injection",
+        "path": "./syntaxes/mino-js-injections.tmLanguage.json",
+        "injectTo": [
+          "source.js",
+          "source.ts",
+          "source.jsx",
+          "source.tsx"
+        ]
       }
     ],
     "commands": [

@@ -1,7 +1,7 @@
 // README.md
 # Mino Language Support for VS Code
 
-This extension provides comprehensive language support for Mino (.mino) component files.
+This extension provides language support for Mino (.mino) files and injects highlighting for `@html` and `@css` blocks inside JS/TS as per the v2.0 spec.
 
 ```bash
 # 1. Ensure everything compiles cleanly
@@ -16,12 +16,10 @@ code --install-extension mino-lang-*.vsix
 
 ## Features
 
-- **Syntax Highlighting**: Full syntax highlighting for Mino directives, CSS, HTML, and JavaScript
-- **IntelliSense**: Auto-completion for directives, modifiers, and properties
-- **Code Snippets**: Quick insertion of common Mino patterns
-- **Symbol Navigation**: Outline view and go-to-definition for components
-- **Auto-compilation**: Compile .mino files to JavaScript on save
-- **Error Detection**: Real-time validation and error reporting
+- **Syntax Highlighting**: Embedded CSS and HTML inside `@css { ... }` and `@html { ... }` blocks
+- **Injection in JS/TS**: Highlights blocks in `.js/.ts/.jsx/.tsx` when using `const name = @html/@css { ... }`
+- **Snippets**: Quick insertion for `const name = @css {}` and `const name = @html {}`
+- **Hover/Completion/Validation**: Helpers and diagnostics for v2.0 assignment syntax
 
 ## Quick Start
 
@@ -30,21 +28,21 @@ code --install-extension mino-lang-*.vsix
 3. Type `component` and press Tab to insert a component template
 4. Use Ctrl+Shift+M (Cmd+Shift+M on Mac) to compile
 
-## Example Component
+## Example (v2.0 assignment syntax)
 
 ```mino
 // css syntax highlighting
-@css styleSheet() {
+const styleSheet = @css {
   .primary-button { padding: 8px; color: black; }
 }
 
 // html syntax highlighting
-@html MyButton({ name }) {
+const MyButton = @html {
   <button class="primary-button">${name}</button>
 }
 
 // normal js
-const render = () => MyButton({ name })
+const render = (name) => MyButton(name)
 ```
 
 ## Configuration

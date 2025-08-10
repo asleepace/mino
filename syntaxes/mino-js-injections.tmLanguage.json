@@ -1,24 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "Mino",
-  "scopeName": "source.mino",
-  "fileTypes": ["mino"],
+  "name": "Mino Injections",
+  "scopeName": "source.mino.injection",
+  "injectionSelector": "L:source.js, L:source.ts, L:source.jsx, L:source.tsx",
   "patterns": [
-    {
-      "include": "#mino-css-variable"
-    },
-    {
-      "include": "#mino-html-variable"
-    },
-    {
-      "include": "#mino-css-block"
-    },
-    {
-      "include": "#mino-html-block"
-    },
-    {
-      "include": "source.js"
-    }
+    { "include": "#mino-css-variable" },
+    { "include": "#mino-html-variable" },
+    { "include": "#mino-css-block" },
+    { "include": "#mino-html-block" }
   ],
   "repository": {
     "mino-css-variable": {
@@ -37,12 +26,8 @@
       },
       "contentName": "source.css.embedded.mino",
       "patterns": [
-        {
-          "include": "#interpolation"
-        },
-        {
-          "include": "source.css"
-        }
+        { "include": "#interpolation" },
+        { "include": "source.css" }
       ]
     },
     "mino-css-block": {
@@ -69,7 +54,7 @@
         "1": { "name": "punctuation.definition.block.begin.mino" }
       },
       "end": "\\}",
-      "applyEndPatternLast": true,
+      "applyEndPatternLast": 1,
       "endCaptures": {
         "0": { "name": "punctuation.definition.block.end.mino" }
       },
@@ -89,18 +74,14 @@
         "5": { "name": "punctuation.definition.block.begin.mino" }
       },
       "end": "\\}",
-      "applyEndPatternLast": true,
+      "applyEndPatternLast": 1,
       "endCaptures": {
         "0": { "name": "punctuation.definition.block.end.mino" }
       },
       "contentName": "text.html.embedded.mino",
       "patterns": [
-        {
-          "include": "#interpolation"
-        },
-        {
-          "include": "text.html.basic"
-        }
+        { "include": "#interpolation" },
+        { "include": "text.html.basic" }
       ]
     },
     "interpolation": {
@@ -114,10 +95,9 @@
         "0": { "name": "punctuation.definition.template-expression.end.js" }
       },
       "patterns": [
-        {
-          "include": "source.js"
-        }
+        { "include": "source.js" }
       ]
     }
   }
 }
+

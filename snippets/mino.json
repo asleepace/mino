@@ -1,44 +1,26 @@
 {
-  "CSS Block": {
+  "CSS Block (assignment)": {
     "prefix": ["css", "@css"],
     "body": [
-      "@css ${1:styleName}(${2:params}) {",
-      "  ${3:/* CSS styles */}",
-      "}"
-    ],
-    "description": "Create a CSS block with parameters"
-  },
-  "HTML Block": {
-    "prefix": ["html", "@html"],
-    "body": [
-      "@html ${1:templateName}(${2:params}) {",
-      "  ${3:<!-- HTML content -->}",
-      "}"
-    ],
-    "description": "Create an HTML block with parameters"
-  },
-  "CSS Block - No Parameters": {
-    "prefix": ["css0", "css-empty"],
-    "body": [
-      "@css ${1:styleName}() {",
+      "const ${1:styles} = @css {",
       "  ${2:/* CSS styles */}",
       "}"
     ],
-    "description": "Create a CSS block without parameters"
+    "description": "Create a CSS block assignment"
   },
-  "HTML Block - No Parameters": {
-    "prefix": ["html0", "html-empty"],
+  "HTML Block (assignment)": {
+    "prefix": ["html", "@html"],
     "body": [
-      "@html ${1:templateName}() {",
+      "const ${1:template} = @html {",
       "  ${2:<!-- HTML content -->}",
       "}"
     ],
-    "description": "Create an HTML block without parameters"
+    "description": "Create an HTML block assignment"
   },
   "Button Component": {
     "prefix": "btn-component",
     "body": [
-      "@css ${1:buttonStyles}(${2:primaryColor, textColor}) {",
+      "const ${1:buttonStyles} = @css {",
       "  .btn {",
       "    background: ${${2:primaryColor}};",
       "    color: ${${3:textColor}};",
@@ -54,7 +36,7 @@
       "  }",
       "}",
       "",
-      "@html ${4:buttonTemplate}(${5:text, onClick, className}) {",
+      "const ${4:buttonTemplate} = @html {",
       "  <button class=\"btn ${${6:className}}\" onclick=\"${${7:onClick}}\">",
       "    ${${8:text}}",
       "  </button>",
@@ -65,7 +47,7 @@
   "Card Component": {
     "prefix": "card-component",
     "body": [
-      "@css ${1:cardStyles}() {",
+      "const ${1:cardStyles} = @css {",
       "  .card {",
       "    background: white;",
       "    border: 1px solid #ddd;",
@@ -87,7 +69,7 @@
       "  }",
       "}",
       "",
-      "@html ${2:cardTemplate}(${3:title, content}) {",
+      "const ${2:cardTemplate} = @html {",
       "  <div class=\"card\">",
       "    <h3 class=\"card-title\">${${4:title}}</h3>",
       "    <div class=\"card-content\">${${5:content}}</div>",
@@ -99,7 +81,7 @@
   "User Profile": {
     "prefix": "user-profile",
     "body": [
-      "@css ${1:userProfileStyles}() {",
+      "const ${1:userProfileStyles} = @css {",
       "  .user-profile {",
       "    display: flex;",
       "    align-items: center;",
@@ -128,7 +110,7 @@
       "  }",
       "}",
       "",
-      "@html ${2:userProfileTemplate}(${3:user}) {",
+      "const ${2:userProfileTemplate} = @html {",
       "  <div class=\"user-profile\">",
       "    <img src=\"${${4:user.avatar}}\" alt=\"${${5:user.name}}\" class=\"user-avatar\" />",
       "    <div class=\"user-info\">",
@@ -144,7 +126,7 @@
   "Navigation Menu": {
     "prefix": "nav-menu",
     "body": [
-      "@css ${1:navStyles}() {",
+      "const ${1:navStyles} = @css {",
       "  .navbar {",
       "    display: flex;",
       "    justify-content: space-between;",
@@ -178,7 +160,7 @@
       "  }",
       "}",
       "",
-      "@html ${2:navTemplate}(${3:brandName, navItems}) {",
+      "const ${2:navTemplate} = @html {",
       "  <nav class=\"navbar\">",
       "    <div class=\"nav-brand\">${${4:brandName}}</div>",
       "    <ul class=\"nav-links\">",
@@ -194,7 +176,7 @@
   "Form Input": {
     "prefix": "form-input",
     "body": [
-      "@css ${1:inputStyles}() {",
+      "const ${1:inputStyles} = @css {",
       "  .form-group {",
       "    margin-bottom: 1rem;",
       "  }",
@@ -221,7 +203,7 @@
       "  }",
       "}",
       "",
-      "@html ${2:inputTemplate}(${3:label, name, type, value, placeholder}) {",
+      "const ${2:inputTemplate} = @html {",
       "  <div class=\"form-group\">",
       "    <label class=\"form-label\" for=\"${${4:name}}\">${${5:label}}</label>",
       "    <input ",
@@ -248,7 +230,7 @@
       "// ${1:PageName}.mino",
       "import { ${2:dependencies} } from '${3:./data}';",
       "",
-      "@css ${4:pageStyles}() {",
+      "const ${4:pageStyles} = @css {",
       "  .page {",
       "    min-height: 100vh;",
       "    display: flex;",
@@ -265,7 +247,7 @@
       "  }",
       "}",
       "",
-      "@html ${5:pageTemplate}(${6:title, content}) {",
+      "const ${5:pageTemplate} = @html {",
       "  <div class=\"page\">",
       "    <header>",
       "      <h1>${${7:title}}</h1>",

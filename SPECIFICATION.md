@@ -2,90 +2,58 @@
 
 ## Overview
 
-Mino is a JavaScript superset that adds block-level CSS and HTML template definitions with explicit named parameters for better organization, tooling support, and developer experience.
+Mino is a JavaScript superset that adds CSS and HTML template literals through variable assignment syntax. Templates support `${expression}` interpolation and compile to JavaScript functions returning strings.
 
 ## Language Goals
 
-- **Familiar Syntax**: Extend JavaScript with minimal new concepts
-- **Clear Boundaries**: Unambiguous block declarations for reliable parsing
-- **Tool-Friendly**: Enable excellent IDE support and syntax highlighting
-- **Type Safety**: Support future TypeScript integration
-- **Build Integration**: Compile cleanly to standard JavaScript
+- **Minimal Syntax**: Single assignment operator with template blocks
+- **Template Interpolation**: Standard `${variable}` syntax in both CSS and HTML
+- **Tool-Friendly**: Unambiguous parsing for reliable IDE support
+- **JavaScript Compatible**: Direct compilation to standard ES modules
 
 ## Syntax Specification
 
-### Block Declaration Grammar
+### Grammar
 
 ```ebnf
-mino_file = (javascript_statement | mino_block)*
-mino_block = "@" block_type identifier parameter_list "{" block_content "}"
+mino_file = (javascript_statement | mino_assignment | mino_bare_block)*
+mino_assignment = variable_declaration "=" "@" block_type block_content
+mino_bare_block = "@" block_type block_content
+variable_declaration = ("const" | "let" | "var") identifier
 block_type = "css" | "html"
+block_content = "{" template_content "}"
+template_content = (text | interpolation)*
+interpolation = "${" javascript_expression "}"
 identifier = [a-zA-Z_$][a-zA-Z0-9_$]*
-parameter_list = "(" (parameter ("," parameter)*)? ")"
-parameter = [a-zA-Z_$][a-zA-Z0-9_$]*
-block_content = any_content_until_matching_brace
 ```
 
-### CSS Blocks
+### CSS Templates
 
-CSS blocks define reusable stylesheets with optional parameters:
+CSS templates define reusable stylesheets with interpolation:
 
 ```mino
-@css buttonStyles {
+const buttonStyles = @css {
   .btn {
-    background: #007bff;
-    color: white;
-    border: none;
+    background: ${primaryColor};
+    color: ${textColor};
     padding: 8px 16px;
     border-radius: 4px;
   }
 }
 
-@css themedButton(primaryColor, textColor) {
-  .themed-btn {
-    background: ${primaryColor};
-    color: ${textColor};
-    transition: opacity 0.2s;
+const mediaQuery = @css {
+  @media (min-width: ${breakpoint}) {
+    .container { max-width: ${maxWidth}; }
   }
-  
-  .themed-btn:hover {
-    opacity: 0.8;
-  }
-}
-
-@html customButton {
-  <button class="theme-button">
-    Click me!
-  </button>
-}
-
-@html customButton(message) {
-  <button class="theme-button">
-    ${message}
-  </button>
-}
-
-@html container(style, children) {
-  <div class="container">
-    <style>${style}</style>
-    ${children}
-  </div>
-}
-
-function render() {
-  return container(
-    buttonStyles, 
-    customButton('Hello')
-  )
 }
 ```
 
-### HTML Blocks
+### HTML Templates
 
-HTML blocks define reusable templates with explicit parameters:
+HTML templates define reusable markup with interpolation:
 
 ```mino
-@html userCard(user) {
+const userCard = @html {
   <div class="user-card">
     <img src="${user.avatar}" alt="${user.name}" />
     <h3>${user.name}</h3>
@@ -93,12 +61,12 @@ HTML blocks define reusable templates with explicit parameters:
   </div>
 }
 
-@html productList(products, onProductClick) {
+const productList = @html {
   <div class="product-grid">
     ${products.map(product => `
-      <div class="product-item" onclick="${onProductClick}('${product.id}')">
+      <div class="product-item">
         <h4>${product.name}</h4>
-        <span class="price">$${product.price}</span>
+        <span>$${product.price}</span>
       </div>
     `).join('')}
   </div>
@@ -107,37 +75,30 @@ HTML blocks define reusable templates with explicit parameters:
 
 ### Template Interpolation
 
-Within HTML blocks, JavaScript expressions are embedded using `${expression}` syntax:
+JavaScript expressions are embedded using `${expression}` syntax:
 
-- **Simple variables**: `${name}`, `${user.email}`
-- **Function calls**: `${formatDate(date)}`, `${capitalize(title)}`
-- **Complex expressions**: `${condition ? 'active' : 'inactive'}`
-- **Array operations**: `${items.map(item => item.name).join(', ')}`
+- **Variables**: `${color}`, `${user.name}`
+- **Function calls**: `${formatDate(date)}`, `${getTheme()}`
+- **Expressions**: `${isActive ? 'active' : 'inactive'}`
+- **Template composition**: `${otherTemplate}`
 
-### Scoping Rules
+## Compilation
 
-1. **Top-level only**: Blocks can only be declared at module scope
-2. **No nesting**: Blocks cannot be declared inside functions, classes, or other blocks
-3. **Module scope**: Block identifiers are available throughout the module
-4. **Export support**: Blocks can be exported like any other declaration
-
-## Compilation Target
-
-Mino blocks compile to JavaScript functions:
+Mino templates compile to JavaScript functions:
 
 ```mino
-// Source Mino
-@css buttonStyles {
-  .btn { color: red; }
+// Source
+const styles = @css {
+  .btn { color: ${color}; }
 }
 
-@html greeting(name) {
+const greeting = @html {
   <h1>Hello ${name}!</h1>
 }
 
-// Compiled JavaScript  
-const buttonStyles = () => `
-  .btn { color: red; }
+// Compiled
+const styles = (color) => `
+  .btn { color: ${color}; }
 `;
 
 const greeting = (name) => `
@@ -145,67 +106,48 @@ const greeting = (name) => `
 `;
 ```
 
-## Language Features
+### Parameter Detection
 
-### Parameter Declaration
-
-Parameters must be explicitly declared in parentheses:
+The compiler automatically detects interpolated variables and generates function parameters:
 
 ```mino
-@html userProfile(user, showEmail, theme) {
-  <div class="profile ${theme}">
+// Detects: user, showEmail, theme
+const profile = @html {
+  <div class="${theme}">
     <h2>${user.name}</h2>
     ${showEmail ? `<p>${user.email}</p>` : ''}
   </div>
 }
+
+// Compiles to:
+const profile = (user, showEmail, theme) => `...`;
 ```
 
-### Empty Parameter Lists
+## Language Constraints
 
-Blocks without parameters still require empty parentheses:
+### Scoping Rules
 
-```mino
-@css globalStyles() {
-  * { margin: 0; padding: 0; }
-}
+1. **Top-level only for assignments**: Variable-declared templates must be at module scope
+2. **No nesting (assignments)**: Assigned templates cannot be declared inside functions or blocks
+3. **Bare blocks**: `@css {}` and `@html {}` without assignment are allowed anywhere for embedded highlighting
+4. **Module scope**: Template variables are available throughout the module
 
-@html header() {
-  <header><h1>My App</h1></header>
-}
-```
+### Validation Rules
 
-### Comments
-
-Standard JavaScript comments are supported:
-
-```mino
-// CSS utility classes
-@css utilities() {
-  .hidden { display: none; }
-  .flex { display: flex; }
-}
-
-/* 
- * Multi-line comment
- * for complex templates
- */
-@html complexForm(data, handlers) {
-  <!-- HTML comments work inside blocks -->
-  <form>${data.fields}</form>
-}
-```
+1. **Valid identifiers**: Template names must follow JavaScript identifier rules
+2. **Unique names**: No duplicate template names in the same module
+3. **Matched braces**: Template blocks must have balanced `{}`
+4. **Usage**: `@css` and `@html` valid in variable assignments and as bare blocks
 
 ## File Structure
 
-Mino files use the `.mino` extension and can contain:
-
 ```mino
-// Regular JavaScript imports/exports
+// Standard JavaScript imports
 import { users } from './data.js';
 import { formatDate } from './utils.js';
 
-// CSS blocks
-@css cardStyles() {
+// CSS templates
+const cardStyles = @css {
   .card {
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -213,20 +155,21 @@ import { formatDate } from './utils.js';
   }
 }
 
-// HTML blocks
-@html userCard(user) {
+// HTML templates
+const userCard = @html {
   <div class="card">
+    <style>${cardStyles}</style>
     <h3>${user.name}</h3>
     <p>Joined: ${formatDate(user.createdAt)}</p>
   </div>
 }
 
-// Regular JavaScript functions
+// Standard JavaScript functions
 function renderUsers() {
   return users.map(user => userCard(user)).join('');
 }
 
-// Exports
+// Standard exports
 export { cardStyles, userCard, renderUsers };
 ```
 
@@ -234,90 +177,38 @@ export { cardStyles, userCard, renderUsers };
 
 ### Compilation Errors
 
-1. **Invalid identifiers**: `@css 123invalid() {}` → Error
-2. **Duplicate names**: Two blocks with same identifier → Error  
-3. **Invalid nesting**: Blocks inside functions → Error
-4. **Malformed parameters**: `@html test(,invalid)` → Error
-5. **Unmatched braces**: Missing closing brace → Error
+- **Invalid template names**: Non-identifier names
+- **Duplicate declarations**: Multiple templates with same name
+- **Invalid nesting**: Templates inside functions/classes
+- **Unmatched braces**: Malformed template blocks
+- **Invalid usage**: `@css`/`@html` not followed by `{` or assignment
 
-### Runtime Considerations
+### Runtime Behavior
 
-1. **Parameter validation**: Compiled functions receive declared parameters
-2. **Template interpolation**: JavaScript expression evaluation at runtime
-3. **XSS protection**: User responsibility to sanitize interpolated content
+- **Parameter validation**: Runtime responsibility
+- **Template interpolation**: Standard JavaScript template literal evaluation
+- **XSS protection**: User responsibility for content sanitization
 
-## Integration Guidelines
+## Build Integration
 
-### Build Tools
+### File Processing
 
-- **File processing**: `.mino` → `.js` transformation
-- **Source maps**: Preserve line numbers for debugging
-- **Watch mode**: Hot reload on block changes
-- **Tree shaking**: Support dead code elimination
+- **Input**: `.mino` files
+- **Output**: `.js` ES modules
+- **Source maps**: Preserved for debugging
+- **Watch mode**: Hot reload support
 
 ### IDE Support
 
-- **Syntax highlighting**: CSS/HTML within blocks
-- **IntelliSense**: Parameter completion and validation
+- **Syntax highlighting**: CSS/HTML within template blocks and bare blocks
 - **Error reporting**: Real-time compilation errors
-- **Refactoring**: Rename blocks and parameters
-
-### Type Safety
-
-Future TypeScript integration:
-
-```mino
-interface User {
-  name: string;
-  email: string;
-  avatar: string;
-}
-
-@html userCard(user: User) {
-  <div class="card">
-    <h3>${user.name}</h3>
-  </div>
-}
-```
-
-## Edge Cases
-
-1. **Nested braces in CSS**: `@media {}` rules handled correctly
-2. **Template literals in HTML**: JavaScript string interpolation preserved
-3. **Special characters**: Quotes, backslashes escaped properly
-4. **Large blocks**: No artificial size limits
-5. **Unicode identifiers**: Standard JavaScript identifier rules apply
-
-## Migration Path
-
-### From v1.0 (Variable Assignment Syntax)
-
-```mino
-
-@html container {
-  <div class="container">
-
-  </div>
-}
-
-@css styles() {
-  .btn { color: red; }
-}
-```
-
-### Automated Migration Tool
-
-Planned tooling to convert existing Mino v1.0 codebases to v2.0 block syntax.
-
-## Version History
-
-- **v2.0**: Block-level syntax with explicit parameters (`@css name() {}`)
+- **IntelliSense**: Variable completion within interpolations
+- **Refactoring**: Template variable renaming
 
 ## Future Enhancements
 
-- **Nested blocks**: Conditional support for specific use cases
-- **Import blocks**: `@import` syntax for sharing blocks across files
-- **Preprocessing**: Sass-like features for CSS blocks
-- **Optimization**: Compile-time CSS/HTML minification
-- **Web Components**: Direct compilation to custom elements
-- **vNEXT**: TODO: variable assignment syntax (`const x = @css {}`)
+- **TypeScript integration**: Type annotations for template parameters
+- **Import templates**: Cross-module template sharing
+- **CSS preprocessing**: Sass-like features
+- **Optimization**: Compile-time minification
+- **Web Components**: Direct custom element compilation
