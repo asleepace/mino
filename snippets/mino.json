@@ -1,128 +1,146 @@
 {
-    "Component Template": {
-      "prefix": "component",
-      "body": [
-        "@template {",
-        "  <div class=\"${1:component-name}\">",
-        "    ${2:<!-- Component content -->}",
-        "  </div>",
-        "}",
-        "@end",
-        "",
-        "@style {",
-        "  .${1:component-name} {",
-        "    ${3:/* Component styles */}",
-        "  }",
-        "}",
-        "@end",
-        "",
-        "@prop ${4:propName} = ${5:\"defaultValue\"}",
-        "",
-        "@onMounted {",
-        "  ${6:// Component initialization}",
-        "}",
-        "@end"
-      ],
-      "description": "Create a basic Mino component structure"
-    },
-    "Property": {
-      "prefix": "prop",
-      "body": [
-        "@prop ${1:(${2:modifiers})} ${3:propName} = ${4:defaultValue}"
-      ],
-      "description": "Create a component property"
-    },
-    "Reactive Property": {
-      "prefix": "rprop",
-      "body": [
-        "@prop (reactive) ${1:propName} = ${2:defaultValue}"
-      ],
-      "description": "Create a reactive component property"
-    },
-    "Computed Property": {
-      "prefix": "cprop",
-      "body": [
-        "@prop (computed) ${1:propName} = () => ${2:expression}"
-      ],
-      "description": "Create a computed property"
-    },
-    "Method": {
-      "prefix": "method",
-      "body": [
-        "@method ${1:(${2:modifiers})} ${3:methodName}(${4:parameters}) {",
-        "  ${5:// Method implementation}",
-        "}",
-        "@end"
-      ],
-      "description": "Create a component method"
-    },
-    "Event Handler": {
-      "prefix": "handler",
-      "body": [
-        "@method (private) handle${1:Event}(${2:event}) {",
-        "  ${3:// Handle event}",
-        "  this.emit('${4:custom-event}', { ${5:detail} });",
-        "}",
-        "@end"
-      ],
-      "description": "Create an event handler method"
-    },
-    "Lifecycle - onMounted": {
-      "prefix": "mounted",
-      "body": [
-        "@onMounted {",
-        "  ${1:// Component mounted}",
-        "}",
-        "@end"
-      ],
-      "description": "Component mounted lifecycle"
-    },
-    "Lifecycle - onUpdated": {
-      "prefix": "updated",
-      "body": [
-        "@onUpdated(${1:name, oldValue, newValue}) {",
-        "  ${2:// Attribute changed}",
-        "}",
-        "@end"
-      ],
-      "description": "Component updated lifecycle"
-    },
-    "Style Block": {
-      "prefix": "style",
-      "body": [
-        "@style {",
-        "  ${1:/* Component styles */}",
-        "}",
-        "@end"
-      ],
-      "description": "Add a style block"
-    },
-    "Template Block": {
-      "prefix": "template",
-      "body": [
-        "@template {",
-        "  ${1:<!-- Template content -->}",
-        "}",
-        "@end"
-      ],
-      "description": "Add a template block"
-    },
-    "Alias": {
-      "prefix": "alias",
-      "body": [
-        "@alias ${1:(${2:type})} ${3:aliasName} = ${4:value}"
-      ],
-      "description": "Create an alias definition"
-    },
-    "Directive": {
-      "prefix": "directive",
-      "body": [
-        "@directive ${1:directiveName}(ast) {",
-        "  ${2:// Code generation logic}",
-        "  return ${3:generatedCode};",
-        "}",
-        "@end"
-      ],
-      "description": "Create a custom directive"
-    }
+  "HTML Block": {
+    "prefix": ["html", "@html"],
+    "body": [
+      "@html ${1:function_name}: ${2:params}",
+      "  ${3:<!-- HTML content with \\$0, \\$1 tokens -->}"
+    ],
+    "description": "Create an HTML template function"
+  },
+  "CSS Block": {
+    "prefix": ["css", "@css"],
+    "body": [
+      "@css ${1:function_name}: ${2:params}",
+      "  ${3:/* CSS styles with \\$0, \\$1 tokens */}"
+    ],
+    "description": "Create a CSS style function"
+  },
+  "Component Block": {
+    "prefix": ["component", "@component"],
+    "body": [
+      "@component ${1:component_name}: ${2:dependencies}",
+      "  // Initialization",
+      "  self.${3:property} = ${4:value}",
+      "  ",
+      "  // Render function",
+      "  return () => {",
+      "    ${5:// Component logic}",
+      "    return `${6:<div>\\${self.${3:property}}</div>}`;",
+      "  }"
+    ],
+    "description": "Create a web component"
+  },
+  "Macro Block": {
+    "prefix": ["macro", "@macro"],
+    "body": [
+      "@macro ${1:macro_name}: ${2:dependencies}",
+      "  return (${3:params}) => {",
+      "    ${4:// Macro logic}",
+      "    return ${5:result};",
+      "  }"
+    ],
+    "description": "Create a macro function"
+  },
+  "Button HTML": {
+    "prefix": "btn",
+    "body": [
+      "@html button: text, onclick",
+      "  <button class=\"btn\" onclick=\"$1\">$0</button>"
+    ],
+    "description": "Create a button HTML template"
+  },
+  "Container HTML": {
+    "prefix": "container",
+    "body": [
+      "@html container: styles",
+      "  <style>$0</style>",
+      "  <div class=\"container\">",
+      "    $children",
+      "  </div>"
+    ],
+    "description": "Create a container HTML template with styles"
+  },
+  "Card Component": {
+    "prefix": "card",
+    "body": [
+      "@html card: title, content",
+      "  <div class=\"card\">",
+      "    <h3 class=\"card-title\">$0</h3>",
+      "    <div class=\"card-content\">$1</div>",
+      "  </div>",
+      "",
+      "@css card_styles: primary_color",
+      "  .card {",
+      "    border: 1px solid #ddd;",
+      "    border-radius: 8px;",
+      "    padding: 1rem;",
+      "    margin: 0.5rem;",
+      "    background: white;",
+      "    box-shadow: 0 2px 4px rgba(0,0,0,0.1);",
+      "  }",
+      "  ",
+      "  .card-title {",
+      "    color: $0;",
+      "    margin: 0 0 0.5rem 0;",
+      "  }",
+      "  ",
+      "  .card-content {",
+      "    color: #666;",
+      "  }"
+    ],
+    "description": "Create a card component with HTML and CSS"
+  },
+  "Self Property": {
+    "prefix": "self",
+    "body": "self.${1:property} = ${2:value}",
+    "description": "Create a self property assignment"
+  },
+  "Parameter Token": {
+    "prefix": "$",
+    "body": "$${1:0}",
+    "description": "Insert a parameter token"
+  },
+  "Children Placeholder": {
+    "prefix": "children",
+    "body": "$children",
+    "description": "Insert children placeholder"
+  },
+  "Return Function": {
+    "prefix": "return",
+    "body": [
+      "return () => {",
+      "  ${1:// Component logic}",
+      "  return `${2:<div></div>}`;",
+      "}"
+    ],
+    "description": "Create a return function for components"
+  },
+  "Template Literal": {
+    "prefix": "template",
+    "body": "`${1:content}`",
+    "description": "Create a template literal"
+  },
+  "Full Component Example": {
+    "prefix": "example",
+    "body": [
+      "// ${1:component_name}.mino",
+      "",
+      "@html greeting: name",
+      "  <h1>Hello $0!</h1>",
+      "",
+      "@css styles: color",
+      "  h1 { color: $0; }",
+      "",
+      "@component ${1:component_name}: greeting, styles",
+      "  self.name = \"${2:World}\"",
+      "  self.color = \"${3:#007bff}\"",
+      "  ",
+      "  return () => {",
+      "    const html = greeting(self.name);",
+      "    const css = styles(self.color);",
+      "    return `<style>\\${css}</style>\\${html}`;",
+      "  }"
+    ],
+    "description": "Create a complete component example"
   }
+}

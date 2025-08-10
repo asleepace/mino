@@ -1,296 +1,121 @@
 {
-    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-    "name": "Mino",
-    "scopeName": "source.mino",
-    "patterns": [
-      {
-        "include": "#comments"
-      },
-      {
-        "include": "#template-block"
-      },
-      {
-        "include": "#style-block"
-      },
-      {
-        "include": "#script-block"
-      },
-      {
-        "include": "#method-block"
-      },
-      {
-        "include": "#lifecycle-block"
-      },
-      {
-        "include": "#directive-inline"
-      },
-      {
-        "include": "#directive-block"
-      },
-      {
-        "include": "#alias-directive"
-      }
-    ],
-    "repository": {
-      "comments": {
-        "patterns": [
-          {
-            "name": "comment.line.double-slash.mino",
-            "match": "//.*$"
-          },
-          {
-            "name": "comment.block.mino",
-            "begin": "/\\*",
-            "end": "\\*/"
-          }
-        ]
-      },
-      "template-block": {
-        "name": "meta.template.mino",
-        "begin": "(@template)\\s*(\\{)",
-        "contentName": "text.html.basic",
-        "beginCaptures": {
-          "1": {
-            "name": "keyword.control.directive.mino"
-          },
-          "2": {
-            "name": "punctuation.definition.block.begin.mino"
-          }
-        },
-        "end": "(\\})\\s*(@end)",
-        "endCaptures": {
-          "1": {
-            "name": "punctuation.definition.block.end.mino"
-          },
-          "2": {
-            "name": "keyword.control.directive.mino"
-          }
-        },
-        "patterns": [
-          {
-            "include": "#template-interpolation"
-          },
-          {
-            "include": "text.html.basic"
-          }
-        ]
-      },
-      "style-block": {
-        "name": "meta.style.mino",
-        "begin": "(@style)\\s*(\\{)",
-        "contentName": "source.css",
-        "beginCaptures": {
-          "1": {
-            "name": "keyword.control.directive.mino"
-          },
-          "2": {
-            "name": "punctuation.definition.block.begin.mino"
-          }
-        },
-        "end": "(\\})\\s*(@end)",
-        "endCaptures": {
-          "1": {
-            "name": "punctuation.definition.block.end.mino"
-          },
-          "2": {
-            "name": "keyword.control.directive.mino"
-          }
-        },
-        "patterns": [
-          {
-            "include": "source.css"
-          }
-        ]
-      },
-      "script-block": {
-        "name": "meta.script.mino",
-        "begin": "(@script)\\s*(\\{)",
-        "contentName": "source.js",
-        "beginCaptures": {
-          "1": {
-            "name": "keyword.control.directive.mino"
-          },
-          "2": {
-            "name": "punctuation.definition.block.begin.mino"
-          }
-        },
-        "end": "(\\})\\s*(@end)",
-        "endCaptures": {
-          "1": {
-            "name": "punctuation.definition.block.end.mino"
-          },
-          "2": {
-            "name": "keyword.control.directive.mino"
-          }
-        },
-        "patterns": [
-          {
-            "include": "source.js"
-          }
-        ]
-      },
-      "method-block": {
-        "name": "meta.method.mino",
-        "begin": "(@method)\\s*(\\([^)]*\\))?\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\([^)]*\\))?\\s*(\\{)",
-        "beginCaptures": {
-          "1": {
-            "name": "keyword.control.directive.mino"
-          },
-          "2": {
-            "name": "meta.modifiers.mino"
-          },
-          "3": {
-            "name": "entity.name.function.mino"
-          },
-          "4": {
-            "name": "meta.parameters.mino"
-          },
-          "5": {
-            "name": "punctuation.definition.block.begin.mino"
-          }
-        },
-        "end": "(\\})\\s*(@end)",
-        "endCaptures": {
-          "1": {
-            "name": "punctuation.definition.block.end.mino"
-          },
-          "2": {
-            "name": "keyword.control.directive.mino"
-          }
-        },
-        "patterns": [
-          {
-            "include": "source.js"
-          }
-        ]
-      },
-      "lifecycle-block": {
-        "name": "meta.lifecycle.mino",
-        "begin": "(@(?:init|onMounted|onUpdated|onUnmounted|render))\\s*(\\([^)]*\\))?\\s*(\\{)",
-        "beginCaptures": {
-          "1": {
-            "name": "keyword.control.lifecycle.mino"
-          },
-          "2": {
-            "name": "meta.parameters.mino"
-          },
-          "3": {
-            "name": "punctuation.definition.block.begin.mino"
-          }
-        },
-        "end": "(\\})\\s*(@end)",
-        "endCaptures": {
-          "1": {
-            "name": "punctuation.definition.block.end.mino"
-          },
-          "2": {
-            "name": "keyword.control.directive.mino"
-          }
-        },
-        "patterns": [
-          {
-            "include": "source.js"
-          }
-        ]
-      },
-      "directive-inline": {
-        "name": "meta.directive.inline.mino",
-        "match": "(@prop)\\s*(\\([^)]*\\))?\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(=)\\s*(.*)$",
-        "captures": {
-          "1": {
-            "name": "keyword.control.directive.mino"
-          },
-          "2": {
-            "name": "meta.modifiers.mino"
-          },
-          "3": {
-            "name": "variable.other.property.mino"
-          },
-          "4": {
-            "name": "keyword.operator.assignment.mino"
-          },
-          "5": {
-            "name": "meta.value.mino",
-            "patterns": [
-              {
-                "include": "source.js#expression"
-              }
-            ]
-          }
-        }
-      },
-      "directive-block": {
-        "name": "meta.directive.block.mino",
-        "begin": "(@directive)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\([^)]*\\))?\\s*(\\{)",
-        "beginCaptures": {
-          "1": {
-            "name": "keyword.control.directive.mino"
-          },
-          "2": {
-            "name": "entity.name.function.directive.mino"
-          },
-          "3": {
-            "name": "meta.parameters.mino"
-          },
-          "4": {
-            "name": "punctuation.definition.block.begin.mino"
-          }
-        },
-        "end": "(\\})\\s*(@end)",
-        "endCaptures": {
-          "1": {
-            "name": "punctuation.definition.block.end.mino"
-          },
-          "2": {
-            "name": "keyword.control.directive.mino"
-          }
-        },
-        "patterns": [
-          {
-            "include": "source.js"
-          }
-        ]
-      },
-      "alias-directive": {
-        "name": "meta.alias.mino",
-        "match": "(@alias)\\s*(\\([^)]*\\))?\\s*([a-zA-Z_][a-zA-Z0-9_.]*)\\s*(=)\\s*(.*)$",
-        "captures": {
-          "1": {
-            "name": "keyword.control.directive.mino"
-          },
-          "2": {
-            "name": "meta.alias-type.mino"
-          },
-          "3": {
-            "name": "entity.name.alias.mino"
-          },
-          "4": {
-            "name": "keyword.operator.assignment.mino"
-          },
-          "5": {
-            "name": "meta.alias-value.mino"
-          }
-        }
-      },
-      "template-interpolation": {
-        "name": "meta.interpolation.mino",
-        "begin": "\\{",
-        "end": "\\}",
-        "beginCaptures": {
-          "0": {
-            "name": "punctuation.definition.interpolation.begin.mino"
-          }
-        },
-        "endCaptures": {
-          "0": {
-            "name": "punctuation.definition.interpolation.end.mino"
-          }
-        },
-        "patterns": [
-          {
-            "include": "source.js#expression"
-          }
-        ]
-      }
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Mino",
+  "scopeName": "source.mino",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "keyword.control.directive.mino",
+      "match": "^\\s*@end\\s*$"
+    },
+    {
+      "include": "#html-block"
+    },
+    {
+      "include": "#css-block"
+    },
+    {
+      "include": "#component-block"
+    },
+    {
+      "include": "#macro-block"
     }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.mino",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.mino",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "html-block": {
+      "name": "meta.html.mino",
+      "begin": "^([\\t ]*)(@html)\\s+([\\w_]+)(?:\\s*:\\s*([^\\n]+))?\\s*$",
+      "beginCaptures": {
+        "2": { "name": "keyword.control.directive.mino" },
+        "3": { "name": "entity.name.function.html.mino" },
+        "4": { "name": "variable.parameter.mino" }
+      },
+      "contentName": "text.html.basic",
+      "while": "^(?:\\s*$|\\1[\\t ].*)",
+      "patterns": [
+        { "include": "#token-interpolation" },
+        { "include": "#children-placeholder" },
+        { "include": "text.html.basic" }
+      ]
+    },
+    "css-block": {
+      "name": "meta.css.mino",
+      "begin": "^([\\t ]*)(@css)\\s+([\\w_]+)(?:\\s*:\\s*([^\\n]+))?\\s*$",
+      "beginCaptures": {
+        "2": { "name": "keyword.control.directive.mino" },
+        "3": { "name": "entity.name.function.css.mino" },
+        "4": { "name": "variable.parameter.mino" }
+      },
+      "contentName": "source.css",
+      "while": "^(?:\\s*$|\\1[\\t ].*)",
+      "patterns": [
+        { "include": "#token-interpolation" },
+        { "include": "source.css" }
+      ]
+    },
+    "component-block": {
+      "name": "meta.component.mino",
+      "begin": "^([\\t ]*)(@component)\\s+([\\w_]+)(?:\\s*:\\s*([^\\n]+))?\\s*$",
+      "beginCaptures": {
+        "2": { "name": "keyword.control.directive.component.mino" },
+        "3": { "name": "entity.name.class.component.mino" },
+        "4": { "name": "variable.parameter.mino" }
+      },
+      "contentName": "source.js",
+      "while": "^(?:\\s*$|\\1[\\t ].*)",
+      "patterns": [
+        { "include": "#self-keyword" },
+        { "include": "source.js" }
+      ]
+    },
+    "macro-block": {
+      "name": "meta.macro.mino",
+      "begin": "^([\\t ]*)(@macro)\\s+([\\w_]+)(?:\\s*:\\s*([^\\n]+))?\\s*$",
+      "beginCaptures": {
+        "2": { "name": "keyword.control.directive.macro.mino" },
+        "3": { "name": "entity.name.function.macro.mino" },
+        "4": { "name": "variable.parameter.mino" }
+      },
+      "contentName": "source.js",
+      "while": "^(?:\\s*$|\\1[\\t ].*)",
+      "patterns": [
+        { "include": "source.js" }
+      ]
+    },
+    "token-interpolation": {
+      "patterns": [
+        {
+          "name": "variable.other.token.numeric.mino",
+          "match": "\\$\\d+"
+        },
+        {
+          "name": "variable.other.token.named.mino", 
+          "match": "\\$[a-zA-Z_][a-zA-Z0-9_]*"
+        }
+      ]
+    },
+    "children-placeholder": {
+      "name": "variable.other.children.mino",
+      "match": "\\$children"
+    },
+    "self-keyword": {
+      "name": "variable.language.self.mino",
+      "match": "\\bself\\b"
+    }
+  }
 }

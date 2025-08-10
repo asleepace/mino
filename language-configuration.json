@@ -5,51 +5,37 @@
   },
   "brackets": [
     ["{", "}"],
+    ["[", "]"],
     ["(", ")"],
-    ["[", "]"]
+    ["<", ">"]
   ],
   "autoClosingPairs": [
     ["{", "}"],
-    ["(", ")"],
     ["[", "]"],
+    ["(", ")"],
+    ["<", ">"],
     ["\"", "\""],
     ["'", "'"],
     ["`", "`"]
   ],
   "surroundingPairs": [
     ["{", "}"],
-    ["(", ")"],
     ["[", "]"],
+    ["(", ")"],
+    ["<", ">"],
     ["\"", "\""],
     ["'", "'"],
     ["`", "`"]
   ],
   "folding": {
     "markers": {
-      "start": "^\\s*@\\w+.*\\{\\s*$",
-      "end": "^\\s*(@end|\\})\\s*$"
-    },
-    "offSide": true
+      "start": "^\\s*@(html|css|component|macro)\\b.*$",
+      "end": "^(?=\\S)"
+    }
   },
   "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?\\s]+)",
   "indentationRules": {
-    "increaseIndentPattern": "^\\s*@(template|style|script|method|init|onMounted|onUpdated|onUnmounted|render|directive).*\\{\\s*$",
-    "decreaseIndentPattern": "^\\s*(@end|\\})\\s*$",
-    "indentNextLinePattern": "^\\s*@(template|style|script|method|init|onMounted|onUpdated|onUnmounted|render|directive)(?!.*\\{.*\\}).*$",
-    "unIndentedLinePattern": "^\\s*@(prop|alias).*$"
-  },
-  "onEnterRules": [
-    {
-      "beforeText": "^\\s*@(template|style|script|method|init|onMounted|onUpdated|onUnmounted|render|directive).*\\{\\s*$",
-      "action": {
-        "indent": "indent"
-      }
-    },
-    {
-      "beforeText": "^\\s*@(template|style|script|method|init|onMounted|onUpdated|onUnmounted|render|directive)(?!.*\\{).*$",
-      "action": {
-        "indent": "indent"
-      }
-    }
-  ]
+    "increaseIndentPattern": "^\\s*@(html|css|component|macro)\\b.*$",
+    "decreaseIndentPattern": "^(?=\\S)"
+  }
 }

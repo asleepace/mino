@@ -1,28 +1,25 @@
 {
-  "name": "mino-lang",
+  "name": "mino-language",
   "displayName": "Mino Language Support",
-  "description": "Language support for Mino component files (.mino)",
-  "version": "1.0.4",
-  "publisher": "asleepace",
+  "description": "Language support for Mino DSL with HTML, CSS, and component syntax",
+  "version": "0.1.1",
   "engines": {
-    "vscode": "^1.99.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
     "Programming Languages",
     "Snippets",
-    "Themes"
+    "Other"
   ],
   "keywords": [
     "mino",
+    "dsl",
     "web components",
-    "javascript",
     "html",
-    "css"
+    "css",
+    "javascript"
   ],
   "main": "./out/extension.js",
-  "activationEvents": [
-    "onLanguage:mino"
-  ],
   "contributes": {
     "languages": [
       {
@@ -45,20 +42,7 @@
       {
         "language": "mino",
         "scopeName": "source.mino",
-        "path": "./syntaxes/mino.tmLanguage.json",
-        "embeddedLanguages": {
-          "meta.template.mino": "html",
-          "meta.style.mino": "css",
-          "meta.script.mino": "javascript",
-          "meta.method.mino": "javascript",
-          "meta.lifecycle.mino": "javascript"
-        }
-      }
-    ],
-    "snippets": [
-      {
-        "language": "mino",
-        "path": "./snippets/mino.json"
+        "path": "./syntaxes/mino.tmLanguage.json"
       }
     ],
     "commands": [
@@ -69,17 +53,41 @@
       },
       {
         "command": "mino.createComponent",
-        "title": "Create New Mino Component",
+        "title": "Create New Component",
         "category": "Mino"
       }
     ],
+    "keybindings": [
+      {
+        "command": "mino.compile",
+        "key": "ctrl+shift+c",
+        "mac": "cmd+shift+c",
+        "when": "editorLangId == mino"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorLangId == mino",
+          "command": "mino.compile",
+          "group": "1_modification"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "explorerResourceExtname == .mino",
+          "command": "mino.compile",
+          "group": "1_modification"
+        }
+      ]
+    },
     "configuration": {
       "title": "Mino",
       "properties": {
         "mino.autoCompile": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically compile .mino files on save"
+          "description": "Automatically compile Mino files on save"
         },
         "mino.outputDirectory": {
           "type": "string",
@@ -89,45 +97,33 @@
         "mino.showCompileNotifications": {
           "type": "boolean",
           "default": true,
-          "description": "Show notifications when compilation completes"
+          "description": "Show notifications when compilation succeeds"
+        },
+        "mino.validateOnType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Validate Mino syntax as you type"
         }
       }
     },
-    "keybindings": [
+    "snippets": [
       {
-        "command": "mino.compile",
-        "key": "ctrl+shift+m",
-        "mac": "cmd+shift+m",
-        "when": "editorLangId == mino"
+        "language": "mino",
+        "path": "./snippets/mino.json"
       }
     ]
   },
+  "activationEvents": [
+    "onLanguage:mino"
+  ],
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "package": "vsce package",
-    "publish": "vsce publish"
+    "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/node": "^18.19.122",
-    "@types/vscode": "^1.99.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "@vscode/vsce": "^2.32.0",
-    "eslint": "^8.57.1",
-    "typescript": "^5.9.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-username/mino-vscode-extension.git"
-  },
-  "bugs": {
-    "url": "https://github.com/your-username/mino-vscode-extension/issues"
-  },
-  "homepage": "https://github.com/your-username/mino-vscode-extension#readme",
-  "license": "MIT"
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  }
 }

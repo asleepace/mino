@@ -1,87 +1,137 @@
 {
-    "files.exclude": {
-      "out": false,
-      "node_modules": true,
-      ".vscode-test": true
-    },
-    "search.exclude": {
-      "out": true,
-      "node_modules": true,
-      ".vscode-test": true
-    },
-    "typescript.tsc.autoDetect": "off",
-    "typescript.preferences.includePackageJsonAutoImports": "auto",
-    "typescript.suggest.autoImports": true,
-    "editor.tokenColorCustomizations": {
-      "textMateRules": [
-        {
-          "scope": "keyword.modifier.mino",
-          "settings": {
-            "foreground": "#5DADE2",
-            "fontStyle": "italic"
-          }
-        },
-        {
-          "scope": "storage.modifier.custom.mino",
-          "settings": {
-            "foreground": "#85C1E9",
-            "fontStyle": "italic"
-          }
-        },
-        {
-          "scope": "keyword.control.directive.mino",
-          "settings": {
-            "foreground": "#E74C3C",
-            "fontStyle": "bold"
-          }
-        },
-        {
-          "scope": "keyword.control.lifecycle.mino",
-          "settings": {
-            "foreground": "#F39C12",
-            "fontStyle": "bold"
-          }
-        },
-        {
-          "scope": "keyword.control.directive.end.mino",
-          "settings": {
-            "foreground": "#95A5A6",
-            "fontStyle": "italic"
-          }
-        },
-        {
-          "scope": "meta.interpolation.mino",
-          "settings": {
-            "foreground": "#8E44AD"
-          }
-        },
-        {
-          "scope": "punctuation.definition.interpolation.begin.mino, punctuation.definition.interpolation.end.mino",
-          "settings": {
-            "foreground": "#E67E22",
-            "fontStyle": "bold"
-          }
-        },
-        {
-          "scope": "source.js.embedded.mino",
-          "settings": {
-            "foreground": "#27AE60"
-          }
-        },
-        {
-          "scope": "variable.other.property.mino",
-          "settings": {
-            "foreground": "#3498DB",
-            "fontStyle": "bold"
-          }
-        },
-        {
-          "scope": "entity.name.function.mino",
-          "settings": {
-            "foreground": "#9B59B6",
-            "fontStyle": "bold"
-          }
+  "files.exclude": {
+    "out": false,
+    "node_modules": true,
+    ".vscode-test": true
+  },
+  "search.exclude": {
+    "out": true,
+    "node_modules": true,
+    ".vscode-test": true
+  },
+  "typescript.tsc.autoDetect": "off",
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.suggest.autoImports": true,
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      // Mino directive keywords (@html, @css, @component, @macro)
+      {
+        "scope": "keyword.control.directive.mino",
+        "settings": {
+          "foreground": "#fb62dc",
+          "fontStyle": "bold"
         }
-      ]
-    }
-  }
+      },
+      // Function names (greeting, styles, etc.)
+      {
+        "scope": "entity.name.function.html.mino, entity.name.function.css.mino, entity.name.function.macro.mino",
+        "settings": {
+          "foreground": "#9B59B6",
+          "fontStyle": "bold"
+        }
+      },
+      // Component names 
+      {
+        "scope": "entity.name.class.component.mino",
+        "settings": {
+          "foreground": "#E74C3C",
+          "fontStyle": "bold"
+        }
+      },
+      // Parameters after colon (name, color, etc.)
+      {
+        "scope": "variable.parameter.mino",
+        "settings": {
+          "foreground": "#3498DB",
+          "fontStyle": "italic"
+        }
+      },
+      // Token interpolation ($0, $1, $2, etc.)
+      {
+        "scope": "variable.other.token.numeric.mino",
+        "settings": {
+          "foreground": "#E67E22",
+          "fontStyle": "bold"
+        }
+      },
+      // Named tokens ($children, $styles, etc.)
+      {
+        "scope": "variable.other.token.named.mino",
+        "settings": {
+          "foreground": "#F39C12",
+          "fontStyle": "bold"
+        }
+      },
+      // $children placeholder specifically
+      {
+        "scope": "variable.other.children.mino",
+        "settings": {
+          "foreground": "#2ECC71",
+          "fontStyle": "bold"
+        }
+      },
+      // self keyword
+      {
+        "scope": "variable.language.self.mino",
+        "settings": {
+          "foreground": "#8E44AD",
+          "fontStyle": "bold"
+        }
+      },
+      // Block containers
+      {
+        "scope": "meta.html.mino",
+        "settings": {
+          "background": "#2C3E50"
+        }
+      },
+      {
+        "scope": "meta.css.mino",
+        "settings": {
+          "background": "#34495E"
+        }
+      },
+      {
+        "scope": "meta.component.mino",
+        "settings": {
+          "background": "#1B2631"
+        }
+      },
+      {
+        "scope": "meta.macro.mino",
+        "settings": {
+          "background": "#212F3C"
+        }
+      },
+      // Comments in Mino files
+      {
+        "scope": "comment.line.double-slash.mino, comment.block.mino",
+        "settings": {
+          "foreground": "#7F8C8D",
+          "fontStyle": "italic"
+        }
+      }
+    ]
+  },
+  // Associate .mino files with your language
+  "files.associations": {
+    "*.mino": "mino"
+  },
+  // Mino-specific editor settings
+  "[mino]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false,
+    "editor.autoIndent": "full",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "on",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.indentation": true,
+    "editor.renderWhitespace": "boundary"
+  },
+  // Language configuration for better development experience
+  "mino.autoCompile": true,
+  "mino.outputDirectory": "./dist",
+  "mino.showCompileNotifications": true,
+  "mino.validateOnType": true
+}
