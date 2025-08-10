@@ -1,16 +1,28 @@
 // src/extension.ts
 import * as vscode from 'vscode';
+import { MinoCompiler } from './compiler';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Mino v2.0 language extension is now active!');
 
-    // Register a command for formatting Mino files
-    const formatCommand = vscode.commands.registerCommand('mino.format', () => {
+    // Register a command to compile .mino -> .js in dist/
+    const compiler = new MinoCompiler();
+    const compileCommand = vscode.commands.registerCommand('mino.compileFile', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (editor && editor.document.languageId === 'mino') {
-            vscode.window.showInformationMessage('Mino formatting coming soon!');
-        } else {
-            vscode.window.showWarningMessage('Please open a .mino file to format.');
+        if (!editor || editor.document.languageId !== 'mino') {
+            vscode.window.showWarningMessage('Please open a .mino file to compile.');
+            return;
+        }
+        try {
+            const src = editor.document.getText();
+            const compiled = await compiler.compile(src, editor.document.fileName);
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri)?.uri.fsPath || process.cwd();
+            const outPath = vscode.Uri.joinPath(vscode.Uri.file(workspaceFolder), 'dist', editor.document.uri.path.replace(/^.*\/(.+?)\.mino$/, '$1.js'));
+            await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(outPath, '..'));
+            await vscode.workspace.fs.writeFile(outPath, Buffer.from(compiled, 'utf8'));
+            vscode.window.showInformationMessage(`Compiled to ${outPath.fsPath}`);
+        } catch (err: any) {
+            vscode.window.showErrorMessage(`Mino compile error: ${err?.message || String(err)}`);
         }
     });
 
@@ -197,6 +209,28 @@ export function activate(context: vscode.ExtensionContext) {
         validateDocument(document);
     });
 
+    // Auto-compile on save if enabled
+    const onDidSave = vscode.workspace.onDidSaveTextDocument(async (document) => {
+        if (document.languageId !== 'mino') return;
+        const cfg = vscode.workspace.getConfiguration();
+        const auto = cfg.get<boolean>('mino.autoCompile', true);
+        if (!auto) return;
+        try {
+            const compiled = await compiler.compile(document.getText(), document.fileName);
+            const outDir = cfg.get<string>('mino.outputDirectory', './dist');
+            const root = vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || process.cwd();
+            const outFsPath = require('path').resolve(root, outDir, document.uri.path.replace(/^.*\/(.+?)\.mino$/, '$1.js'));
+            const outUri = vscode.Uri.file(outFsPath);
+            await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(outUri, '..'));
+            await vscode.workspace.fs.writeFile(outUri, Buffer.from(compiled, 'utf8'));
+            if (cfg.get<boolean>('mino.showCompileNotifications', true)) {
+                vscode.window.showInformationMessage(`Mino: Compiled ${document.uri.path} → ${outFsPath}`);
+            }
+        } catch (err: any) {
+            vscode.window.showErrorMessage(`Mino compile error: ${err?.message || String(err)}`);
+        }
+    });
+
     // Register a definition provider for block references
     const definitionProvider = vscode.languages.registerDefinitionProvider('mino', {
         provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Definition> {
@@ -259,14 +293,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Add all subscriptions
     context.subscriptions.push(
-        formatCommand,
+        compileCommand,
         hoverProvider,
         completionProvider,
         diagnosticCollection,
         onDocumentChange,
         onDocumentOpen,
         definitionProvider,
-        codeActionProvider
+        codeActionProvider,
+        onDidSave
     );
 
     // File decoration overlay for .mino files so users can keep their existing icon theme

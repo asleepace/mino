@@ -19,6 +19,26 @@
     "dsl"
   ],
   "contributes": {
+    "configuration": {
+      "title": "Mino",
+      "properties": {
+        "mino.autoCompile": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically compile .mino files on save"
+        },
+        "mino.outputDirectory": {
+          "type": "string",
+          "default": "./dist",
+          "description": "Output directory for compiled JavaScript files (relative to workspace or absolute)"
+        },
+        "mino.showCompileNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when compilation completes or fails"
+        }
+      }
+    },
     "configurationDefaults": {
       "workbench.iconTheme": "mino-icons"
     },
@@ -60,8 +80,8 @@
     ],
     "commands": [
       {
-        "command": "mino.format",
-        "title": "Format Mino File",
+        "command": "mino.compileFile",
+        "title": "Compile Mino File",
         "category": "Mino"
       }
     ]
