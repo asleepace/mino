@@ -219,6 +219,23 @@ function activate(context) {
     });
     // Add all subscriptions
     context.subscriptions.push(formatCommand, hoverProvider, completionProvider, diagnosticCollection, onDocumentChange, onDocumentOpen, definitionProvider, codeActionProvider);
+    // File decoration overlay for .mino files so users can keep their existing icon theme
+    const minoDecorationEmitter = new vscode.EventEmitter();
+    const minoDecorationProvider = {
+        onDidChangeFileDecorations: minoDecorationEmitter.event,
+        provideFileDecoration(uri) {
+            if (uri.fsPath.endsWith('.mino')) {
+                const decoration = new vscode.FileDecoration('M', 'Mino file');
+                decoration.propagate = false;
+                return decoration;
+            }
+            return undefined;
+        }
+    };
+    const decorationDisposable = vscode.window.registerFileDecorationProvider(minoDecorationProvider);
+    // Refresh decorations once on activation
+    minoDecorationEmitter.fire(undefined);
+    context.subscriptions.push(decorationDisposable);
 }
 exports.activate = activate;
 function deactivate() {

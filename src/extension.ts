@@ -268,6 +268,24 @@ export function activate(context: vscode.ExtensionContext) {
         definitionProvider,
         codeActionProvider
     );
+
+    // File decoration overlay for .mino files so users can keep their existing icon theme
+    const minoDecorationEmitter = new vscode.EventEmitter<vscode.Uri | vscode.Uri[] | undefined>();
+    const minoDecorationProvider: vscode.FileDecorationProvider = {
+        onDidChangeFileDecorations: minoDecorationEmitter.event,
+        provideFileDecoration(uri: vscode.Uri): vscode.ProviderResult<vscode.FileDecoration> {
+            if (uri.fsPath.endsWith('.mino')) {
+                const decoration = new vscode.FileDecoration('M', 'Mino file');
+                decoration.propagate = false;
+                return decoration;
+            }
+            return undefined;
+        }
+    };
+    const decorationDisposable = vscode.window.registerFileDecorationProvider(minoDecorationProvider);
+    // Refresh decorations once on activation
+    minoDecorationEmitter.fire(undefined);
+    context.subscriptions.push(decorationDisposable);
 }
 
 export function deactivate() {

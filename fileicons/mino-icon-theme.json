@@ -1,0 +1,24 @@
+{
+  "$schema": "vscode://schemas/icon-theme",
+  "iconDefinitions": {
+    "mino-icon-dark": { "iconPath": "../icons/mino-dark.svg" },
+    "mino-icon-light": { "iconPath": "../icons/mino-light.svg" }
+  },
+  "fileExtensions": {
+    "mino": "mino-icon-dark"
+  },
+  "languageIds": {
+    "mino": "mino-icon-dark"
+  },
+  "light": {
+    "fileExtensions": {
+      "mino": "mino-icon-light"
+    },
+    "languageIds": {
+      "mino": "mino-icon-light"
+    }
+  }
+}
+
+
+
