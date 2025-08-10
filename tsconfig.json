@@ -21,6 +21,14 @@
   "exclude": [
     "node_modules",
     ".vscode-test",
-    "out"
+    "out",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "test/**/*",
+    "*.mino",
+    "*.vsix",
+    "syntaxes/**/*",
+    "language-configuration.json",
+    "package.json"
   ]
 }

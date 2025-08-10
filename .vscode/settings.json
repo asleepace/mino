@@ -14,96 +14,111 @@
   "typescript.suggest.autoImports": true,
   "editor.tokenColorCustomizations": {
     "textMateRules": [
-      // Mino directive keywords (@html, @css, @component, @macro)
       {
         "scope": "keyword.control.directive.mino",
         "settings": {
-          "foreground": "#fb62dc",
+          "foreground": "#FF1493",
           "fontStyle": "bold"
         }
       },
-      // Function names (greeting, styles, etc.)
       {
-        "scope": "entity.name.function.html.mino, entity.name.function.css.mino, entity.name.function.macro.mino",
+        "scope": "entity.name.function.css.mino",
         "settings": {
           "foreground": "#9B59B6",
           "fontStyle": "bold"
         }
       },
-      // Component names 
       {
-        "scope": "entity.name.class.component.mino",
+        "scope": "entity.name.function.html.mino",
         "settings": {
           "foreground": "#E74C3C",
           "fontStyle": "bold"
         }
       },
-      // Parameters after colon (name, color, etc.)
       {
-        "scope": "variable.parameter.mino",
+        "scope": "punctuation.definition.template-expression.begin.mino, punctuation.definition.template-expression.end.mino",
         "settings": {
-          "foreground": "#3498DB",
+          "foreground": "#FF6B35",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": "punctuation.definition.block.begin.mino, punctuation.definition.block.end.mino",
+        "settings": {
+          "foreground": "#FF1493",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": "entity.name.tag.html",
+        "settings": {
+          "foreground": "#4A90E2",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": "entity.other.attribute-name.html",
+        "settings": {
+          "foreground": "#F5A623",
           "fontStyle": "italic"
         }
       },
-      // Token interpolation ($0, $1, $2, etc.)
       {
-        "scope": "variable.other.token.numeric.mino",
+        "scope": "support.type.property-name.css",
         "settings": {
-          "foreground": "#E67E22",
+          "foreground": "#7ED321",
+          "fontStyle": "normal"
+        }
+      },
+      {
+        "scope": "support.constant.property-value.css",
+        "settings": {
+          "foreground": "#BD10E0"
+        }
+      },
+      {
+        "scope": "entity.name.tag.css, entity.other.attribute-name.class.css, entity.other.attribute-name.id.css",
+        "settings": {
+          "foreground": "#50E3C2",
           "fontStyle": "bold"
         }
       },
-      // Named tokens ($children, $styles, etc.)
       {
-        "scope": "variable.other.token.named.mino",
+        "scope": "constant.other.color.rgb-value.css",
         "settings": {
-          "foreground": "#F39C12",
-          "fontStyle": "bold"
+          "foreground": "#FF6B35"
         }
       },
-      // $children placeholder specifically
       {
-        "scope": "variable.other.children.mino",
+        "scope": "constant.numeric.css",
         "settings": {
-          "foreground": "#2ECC71",
-          "fontStyle": "bold"
+          "foreground": "#4A90E2"
         }
       },
-      // self keyword
       {
-        "scope": "variable.language.self.mino",
+        "scope": "support.function.css",
         "settings": {
-          "foreground": "#8E44AD",
-          "fontStyle": "bold"
+          "foreground": "#9B59B6"
         }
       },
-      // Block containers
       {
         "scope": "meta.html.mino",
         "settings": {
-          "background": "#2C3E50"
+          "background": "#2C3E5008"
         }
       },
       {
         "scope": "meta.css.mino",
         "settings": {
-          "background": "#34495E"
+          "background": "#34495E08"
         }
       },
       {
-        "scope": "meta.component.mino",
+        "scope": "meta.template.expression.mino",
         "settings": {
-          "background": "#1B2631"
+          "background": "#FF6B3515"
         }
       },
-      {
-        "scope": "meta.macro.mino",
-        "settings": {
-          "background": "#212F3C"
-        }
-      },
-      // Comments in Mino files
       {
         "scope": "comment.line.double-slash.mino, comment.block.mino",
         "settings": {
@@ -113,11 +128,9 @@
       }
     ]
   },
-  // Associate .mino files with your language
   "files.associations": {
     "*.mino": "mino"
   },
-  // Mino-specific editor settings
   "[mino]": {
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
@@ -127,11 +140,7 @@
     "editor.wordWrap": "on",
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.indentation": true,
-    "editor.renderWhitespace": "boundary"
-  },
-  // Language configuration for better development experience
-  "mino.autoCompile": true,
-  "mino.outputDirectory": "./dist",
-  "mino.showCompileNotifications": true,
-  "mino.validateOnType": true
+    "editor.renderWhitespace": "boundary",
+    "editor.semanticHighlighting.enabled": true
+  }
 }

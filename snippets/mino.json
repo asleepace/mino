@@ -2,74 +2,47 @@
   "HTML Block": {
     "prefix": ["html", "@html"],
     "body": [
-      "@html ${1:function_name}: ${2:params}",
-      "  ${3:<!-- HTML content with \\$0, \\$1 tokens -->}"
+      "const ${1:templateName} = @html {",
+      "  ${2:<!-- HTML content with \\${variable} interpolation -->}",
+      "}"
     ],
-    "description": "Create an HTML template function"
+    "description": "Create an HTML template block"
   },
   "CSS Block": {
     "prefix": ["css", "@css"],
     "body": [
-      "@css ${1:function_name}: ${2:params}",
-      "  ${3:/* CSS styles with \\$0, \\$1 tokens */}"
+      "const ${1:styleName} = @css {",
+      "  ${2:/* CSS styles */}",
+      "}"
     ],
-    "description": "Create a CSS style function"
-  },
-  "Component Block": {
-    "prefix": ["component", "@component"],
-    "body": [
-      "@component ${1:component_name}: ${2:dependencies}",
-      "  // Initialization",
-      "  self.${3:property} = ${4:value}",
-      "  ",
-      "  // Render function",
-      "  return () => {",
-      "    ${5:// Component logic}",
-      "    return `${6:<div>\\${self.${3:property}}</div>}`;",
-      "  }"
-    ],
-    "description": "Create a web component"
-  },
-  "Macro Block": {
-    "prefix": ["macro", "@macro"],
-    "body": [
-      "@macro ${1:macro_name}: ${2:dependencies}",
-      "  return (${3:params}) => {",
-      "    ${4:// Macro logic}",
-      "    return ${5:result};",
-      "  }"
-    ],
-    "description": "Create a macro function"
+    "description": "Create a CSS style block"
   },
   "Button HTML": {
     "prefix": "btn",
     "body": [
-      "@html button: text, onclick",
-      "  <button class=\"btn\" onclick=\"$1\">$0</button>"
+      "const ${1:buttonTemplate} = @html {",
+      "  <button class=\"btn\" onclick=\"${2:handleClick}('\\${${3:id}}')\" ${4:disabled=\"\\${disabled}\"}>",
+      "    \\${${5:text}}",
+      "  </button>",
+      "}"
     ],
     "description": "Create a button HTML template"
   },
   "Container HTML": {
     "prefix": "container",
     "body": [
-      "@html container: styles",
-      "  <style>$0</style>",
-      "  <div class=\"container\">",
-      "    $children",
-      "  </div>"
+      "const ${1:containerTemplate} = @html {",
+      "  <div class=\"container\" ${2:style=\"\\${containerStyle}\"}>",
+      "    \\${${3:children}}",
+      "  </div>",
+      "}"
     ],
-    "description": "Create a container HTML template with styles"
+    "description": "Create a container HTML template"
   },
   "Card Component": {
     "prefix": "card",
     "body": [
-      "@html card: title, content",
-      "  <div class=\"card\">",
-      "    <h3 class=\"card-title\">$0</h3>",
-      "    <div class=\"card-content\">$1</div>",
-      "  </div>",
-      "",
-      "@css card_styles: primary_color",
+      "const ${1:cardStyles} = @css {",
       "  .card {",
       "    border: 1px solid #ddd;",
       "    border-radius: 8px;",
@@ -80,67 +53,215 @@
       "  }",
       "  ",
       "  .card-title {",
-      "    color: $0;",
+      "    color: ${2:#333};",
       "    margin: 0 0 0.5rem 0;",
+      "    font-size: 1.25rem;",
+      "    font-weight: 600;",
       "  }",
       "  ",
       "  .card-content {",
       "    color: #666;",
-      "  }"
+      "    line-height: 1.5;",
+      "  }",
+      "}",
+      "",
+      "const ${3:cardTemplate} = @html {",
+      "  <div class=\"card\">",
+      "    <h3 class=\"card-title\">\\${${4:title}}</h3>",
+      "    <div class=\"card-content\">\\${${5:content}}</div>",
+      "  </div>",
+      "}"
     ],
     "description": "Create a card component with HTML and CSS"
   },
-  "Self Property": {
-    "prefix": "self",
-    "body": "self.${1:property} = ${2:value}",
-    "description": "Create a self property assignment"
-  },
-  "Parameter Token": {
-    "prefix": "$",
-    "body": "$${1:0}",
-    "description": "Insert a parameter token"
-  },
-  "Children Placeholder": {
-    "prefix": "children",
-    "body": "$children",
-    "description": "Insert children placeholder"
-  },
-  "Return Function": {
-    "prefix": "return",
+  "Form Input": {
+    "prefix": "input",
     "body": [
-      "return () => {",
-      "  ${1:// Component logic}",
-      "  return `${2:<div></div>}`;",
+      "const ${1:inputTemplate} = @html {",
+      "  <div class=\"form-group\">",
+      "    <label for=\"\\${${2:id}}\">\\${${3:label}}</label>",
+      "    <input ",
+      "      type=\"${4:text}\" ",
+      "      id=\"\\${${2:id}}\" ",
+      "      name=\"\\${${5:name}}\" ",
+      "      value=\"\\${${6:value}}\" ",
+      "      placeholder=\"\\${${7:placeholder}}\"",
+      "      ${8:required}",
+      "    />",
+      "  </div>",
       "}"
     ],
-    "description": "Create a return function for components"
+    "description": "Create a form input template"
   },
-  "Template Literal": {
-    "prefix": "template",
-    "body": "`${1:content}`",
-    "description": "Create a template literal"
-  },
-  "Full Component Example": {
-    "prefix": "example",
+  "Navigation": {
+    "prefix": "nav",
     "body": [
-      "// ${1:component_name}.mino",
-      "",
-      "@html greeting: name",
-      "  <h1>Hello $0!</h1>",
-      "",
-      "@css styles: color",
-      "  h1 { color: $0; }",
-      "",
-      "@component ${1:component_name}: greeting, styles",
-      "  self.name = \"${2:World}\"",
-      "  self.color = \"${3:#007bff}\"",
-      "  ",
-      "  return () => {",
-      "    const html = greeting(self.name);",
-      "    const css = styles(self.color);",
-      "    return `<style>\\${css}</style>\\${html}`;",
-      "  }"
+      "const ${1:navTemplate} = @html {",
+      "  <nav class=\"navbar\">",
+      "    <div class=\"nav-brand\">",
+      "      <a href=\"/\">\\${${2:brandName}}</a>",
+      "    </div>",
+      "    <ul class=\"nav-links\">",
+      "      \\${${3:navItems}.map(item => `",
+      "        <li><a href=\"\\${item.href}\" class=\"\\${item.active ? 'active' : ''}\">\\${item.text}</a></li>",
+      "      `).join('')}",
+      "    </ul>",
+      "  </nav>",
+      "}"
     ],
-    "description": "Create a complete component example"
+    "description": "Create a navigation template with dynamic items"
+  },
+  "List Template": {
+    "prefix": "list",
+    "body": [
+      "const ${1:listTemplate} = @html {",
+      "  <${2:ul} class=\"${3:list}\">",
+      "    \\${${4:items}.map(item => `",
+      "      <${5:li} class=\"${6:list-item}\">\\${${7:item.text}}</${5:li}>",
+      "    `).join('')}",
+      "  </${2:ul}>",
+      "}"
+    ],
+    "description": "Create a dynamic list template"
+  },
+  "Template Interpolation": {
+    "prefix": "${",
+    "body": "\\${${1:variable}}$0",
+    "description": "Insert template interpolation"
+  },
+  "CSS Flexbox": {
+    "prefix": "flex",
+    "body": [
+      "const ${1:flexStyles} = @css {",
+      "  .${2:flex-container} {",
+      "    display: flex;",
+      "    ${3:flex-direction: row;}",
+      "    ${4:justify-content: flex-start;}",
+      "    ${5:align-items: stretch;}",
+      "    ${6:gap: 1rem;}",
+      "  }",
+      "}"
+    ],
+    "description": "Create flexbox CSS styles"
+  },
+  "CSS Grid": {
+    "prefix": "grid",
+    "body": [
+      "const ${1:gridStyles} = @css {",
+      "  .${2:grid-container} {",
+      "    display: grid;",
+      "    grid-template-columns: ${3:repeat(auto-fit, minmax(250px, 1fr))};",
+      "    ${4:grid-template-rows: auto;}",
+      "    gap: ${5:1rem};",
+      "    ${6:padding: 1rem;}",
+      "  }",
+      "}"
+    ],
+    "description": "Create CSS grid styles"
+  },
+  "Media Query": {
+    "prefix": "media",
+    "body": [
+      "@media (${1:max-width}: ${2:768px}) {",
+      "  ${3:/* Mobile styles */}",
+      "}"
+    ],
+    "description": "Create a media query"
+  },
+  "Modal Template": {
+    "prefix": "modal",
+    "body": [
+      "const ${1:modalStyles} = @css {",
+      "  .modal-overlay {",
+      "    position: fixed;",
+      "    top: 0;",
+      "    left: 0;",
+      "    right: 0;",
+      "    bottom: 0;",
+      "    background: rgba(0, 0, 0, 0.5);",
+      "    display: flex;",
+      "    align-items: center;",
+      "    justify-content: center;",
+      "    z-index: 1000;",
+      "  }",
+      "  ",
+      "  .modal {",
+      "    background: white;",
+      "    border-radius: 8px;",
+      "    padding: 2rem;",
+      "    max-width: 90vw;",
+      "    max-height: 90vh;",
+      "    overflow: auto;",
+      "  }",
+      "}",
+      "",
+      "const ${2:modalTemplate} = @html {",
+      "  <div class=\"modal-overlay\" onclick=\"\\${${3:onClose}}\">",
+      "    <div class=\"modal\" onclick=\"event.stopPropagation()\">",
+      "      <div class=\"modal-header\">",
+      "        <h2>\\${${4:title}}</h2>",
+      "        <button onclick=\"\\${${3:onClose}}\" class=\"close-btn\">&times;</button>",
+      "      </div>",
+      "      <div class=\"modal-body\">",
+      "        \\${${5:content}}",
+      "      </div>",
+      "    </div>",
+      "  </div>",
+      "}"
+    ],
+    "description": "Create a modal component with overlay"
+  },
+  "Full Page Template": {
+    "prefix": "page",
+    "body": [
+      "// ${1:PageName}.mino",
+      "import { ${2:dependencies} } from '${3:./components}';",
+      "",
+      "const ${4:pageStyles} = @css {",
+      "  .page {",
+      "    min-height: 100vh;",
+      "    display: flex;",
+      "    flex-direction: column;",
+      "  }",
+      "  ",
+      "  .main-content {",
+      "    flex: 1;",
+      "    padding: 2rem;",
+      "  }",
+      "}",
+      "",
+      "const ${5:pageTemplate} = @html {",
+      "  <div class=\"page\">",
+      "    <style>\\${${4:pageStyles}()}</style>",
+      "    <header>",
+      "      \\${${6:headerTemplate}()}",
+      "    </header>",
+      "    <main class=\"main-content\">",
+      "      \\${${7:content}}",
+      "    </main>",
+      "    <footer>",
+      "      \\${${8:footerTemplate}()}",
+      "    </footer>",
+      "  </div>",
+      "}",
+      "",
+      "export { ${4:pageStyles}, ${5:pageTemplate} };"
+    ],
+    "description": "Create a complete page template with imports and exports"
+  },
+  "Event Handler": {
+    "prefix": "onclick",
+    "body": "onclick=\"${1:handleClick}('\\${${2:id}}')\"$0",
+    "description": "Create an onclick event handler with interpolation"
+  },
+  "CSS Variable": {
+    "prefix": "var",
+    "body": "var(--${1:variable-name}${2:, ${3:fallback}})$0",
+    "description": "Insert a CSS custom property"
+  },
+  "Export Statement": {
+    "prefix": "export",
+    "body": "export { ${1:templates}, ${2:styles} };$0",
+    "description": "Create an export statement for templates and styles"
   }
 }

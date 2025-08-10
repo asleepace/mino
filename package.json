@@ -1,41 +1,29 @@
 {
-  "name": "mino-language",
+  "name": "mino-lang",
   "displayName": "Mino Language Support",
-  "description": "Language support for Mino DSL with HTML, CSS, and component syntax",
-  "version": "0.1.1",
+  "description": "Syntax highlighting for Mino language with embedded HTML and CSS",
+  "version": "1.0.5",
+  "publisher": "asleepace",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
-    "Programming Languages",
-    "Snippets",
-    "Other"
+    "Programming Languages"
   ],
   "keywords": [
     "mino",
-    "dsl",
-    "web components",
     "html",
     "css",
-    "javascript"
+    "template",
+    "dsl"
   ],
-  "main": "./out/extension.js",
   "contributes": {
     "languages": [
       {
         "id": "mino",
-        "aliases": [
-          "Mino",
-          "mino"
-        ],
-        "extensions": [
-          ".mino"
-        ],
-        "configuration": "./language-configuration.json",
-        "icon": {
-          "light": "./icons/mino-light.svg",
-          "dark": "./icons/mino-dark.svg"
-        }
+        "aliases": ["Mino", "mino"],
+        "extensions": [".mino"],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -47,83 +35,31 @@
     ],
     "commands": [
       {
-        "command": "mino.compile",
-        "title": "Compile Mino File",
+        "command": "mino.format",
+        "title": "Format Mino File",
         "category": "Mino"
-      },
-      {
-        "command": "mino.createComponent",
-        "title": "Create New Component",
-        "category": "Mino"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "mino.compile",
-        "key": "ctrl+shift+c",
-        "mac": "cmd+shift+c",
-        "when": "editorLangId == mino"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "when": "editorLangId == mino",
-          "command": "mino.compile",
-          "group": "1_modification"
-        }
-      ],
-      "explorer/context": [
-        {
-          "when": "explorerResourceExtname == .mino",
-          "command": "mino.compile",
-          "group": "1_modification"
-        }
-      ]
-    },
-    "configuration": {
-      "title": "Mino",
-      "properties": {
-        "mino.autoCompile": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically compile Mino files on save"
-        },
-        "mino.outputDirectory": {
-          "type": "string",
-          "default": "./dist",
-          "description": "Output directory for compiled files"
-        },
-        "mino.showCompileNotifications": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show notifications when compilation succeeds"
-        },
-        "mino.validateOnType": {
-          "type": "boolean",
-          "default": true,
-          "description": "Validate Mino syntax as you type"
-        }
-      }
-    },
-    "snippets": [
-      {
-        "language": "mino",
-        "path": "./snippets/mino.json"
       }
     ]
   },
   "activationEvents": [
     "onLanguage:mino"
   ],
+  "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "install-local": "code --install-extension mino-lang-0.1.0.vsix"
   },
   "devDependencies": {
     "@types/vscode": "^1.74.0",
     "@types/node": "16.x",
     "typescript": "^4.9.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asleepace/mino"
+  },
+  "license": "MIT"
 }

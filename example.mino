@@ -1,19 +1,31 @@
-
-
-// Normal vanilla (.js) files with CSS and HTML fences
-// Mainly just want syntax highlighting
+// Test Mino syntax highlighting
+import { users } from './data.js';
 
 const styles = @css {
-   :host {
-      padding
-   }
+  .container {
+    display: flex;
+    background: #f0f0f0;
+    padding: 16px;
+  }
+  
+  .button {
+    background: #007bff;
+    color: white;
+    border: none;
+  }
 }
 
-const userProfile = @html { <div class="">$0</div>  }
-
-const listItem = @html {
-  <li>$item</li>
+const template = @html {
+  <div class="container">
+    <h1>Hello ${name}!</h1>
+    <button onclick="handleClick('${id}')" class="button">
+      ${buttonText}
+    </button>
+  </div>
 }
 
+function handleClick(id) {
+  console.log('Clicked:', id);
+}
 
-
+export { styles, template };
