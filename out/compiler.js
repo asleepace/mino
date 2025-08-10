@@ -26,6 +26,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MinoCompiler = void 0;
 const path = __importStar(require("path"));
 class MinoCompiler {
+    constructor(options) {
+        this.emitExports = options?.emitExports ?? true;
+    }
     async compile(source, fileName) {
         const transformed = this.transformSource(source);
         const banner = `// Generated from ${path.basename(fileName)}\n`;
@@ -34,7 +37,7 @@ class MinoCompiler {
     transformSource(source) {
         let output = '';
         let index = 0;
-        const assignmentRegex = /\b(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*@(css|html)\s*\{/g;
+        const assignmentRegex = /\b(?:(export)\s+)?(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*@(css|html)\s*\{/g;
         const bareRegex = /@(css|html)\s*\{/g;
         while (index < source.length) {
             // Find the next block (assignment or bare)
@@ -84,11 +87,12 @@ class MinoCompiler {
                 break;
             }
             if (isAssignment) {
-                const [, decl, varName, blockType] = nextMatch;
+                const [, exportKw, decl, varName, blockType] = nextMatch;
                 const params = this.detectParams(content);
                 const paramList = Array.from(params).join(', ');
                 const body = this.trimOuterWhitespace(content);
-                const compiled = `const ${varName} = (${paramList}) => \`${body}\`;`;
+                const exportPrefix = (this.emitExports || !!exportKw) ? 'export ' : '';
+                const compiled = `${exportPrefix}const ${varName} = (${paramList}) => \`${body}\`;`;
                 output += compiled;
             }
             else {

@@ -40,11 +40,17 @@ function activate(context) {
         try {
             const src = editor.document.getText();
             const compiled = await compiler.compile(src, editor.document.fileName);
+            const pathMod = require('path');
+            const cfg = vscode.workspace.getConfiguration();
+            const outDir = cfg.get('mino.outputDirectory', './dist');
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri)?.uri.fsPath || process.cwd();
-            const outPath = vscode.Uri.joinPath(vscode.Uri.file(workspaceFolder), 'dist', editor.document.uri.path.replace(/^.*\/(.+?)\.mino$/, '$1.js'));
-            await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(outPath, '..'));
-            await vscode.workspace.fs.writeFile(outPath, Buffer.from(compiled, 'utf8'));
-            vscode.window.showInformationMessage(`Compiled to ${outPath.fsPath}`);
+            const fileBase = pathMod.basename(editor.document.fileName).replace(/\.mino$/, '');
+            const outFsPath = pathMod.resolve(workspaceFolder, outDir, `${fileBase}.js`);
+            const outUri = vscode.Uri.file(outFsPath);
+            const outDirUri = vscode.Uri.file(pathMod.dirname(outFsPath));
+            await vscode.workspace.fs.createDirectory(outDirUri);
+            await vscode.workspace.fs.writeFile(outUri, Buffer.from(compiled, 'utf8'));
+            vscode.window.showInformationMessage(`Compiled to ${outFsPath}`);
         }
         catch (err) {
             vscode.window.showErrorMessage(`Mino compile error: ${err?.message || String(err)}`);
@@ -192,11 +198,14 @@ function activate(context) {
             return;
         try {
             const compiled = await compiler.compile(document.getText(), document.fileName);
+            const pathMod = require('path');
             const outDir = cfg.get('mino.outputDirectory', './dist');
             const root = vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || process.cwd();
-            const outFsPath = require('path').resolve(root, outDir, document.uri.path.replace(/^.*\/(.+?)\.mino$/, '$1.js'));
+            const fileBase = pathMod.basename(document.fileName).replace(/\.mino$/, '');
+            const outFsPath = pathMod.resolve(root, outDir, `${fileBase}.js`);
             const outUri = vscode.Uri.file(outFsPath);
-            await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(outUri, '..'));
+            const outDirUri = vscode.Uri.file(pathMod.dirname(outFsPath));
+            await vscode.workspace.fs.createDirectory(outDirUri);
             await vscode.workspace.fs.writeFile(outUri, Buffer.from(compiled, 'utf8'));
             if (cfg.get('mino.showCompileNotifications', true)) {
                 vscode.window.showInformationMessage(`Mino: Compiled ${document.uri.path} → ${outFsPath}`);

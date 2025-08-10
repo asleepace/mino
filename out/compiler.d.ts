@@ -1,4 +1,8 @@
 export declare class MinoCompiler {
+    private readonly emitExports;
+    constructor(options?: {
+        emitExports?: boolean;
+    });
     compile(source: string, fileName: string): Promise<string>;
     private transformSource;
     private readBalancedBraces;

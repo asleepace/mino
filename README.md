@@ -1,7 +1,7 @@
 // README.md
 # Mino Language Support for VS Code
 
-This extension provides language support for Mino (.mino) files and injects highlighting for `@html` and `@css` blocks inside JS/TS as per the v2.0 spec.
+This extension provides language support for Mino (`.mino`) files and injects highlighting for `@html` and `@css` blocks inside JS/TS. It also compiles `.mino` files to JavaScript.
 
 ```bash
 # 1. Ensure everything compiles cleanly
@@ -20,6 +20,7 @@ code --install-extension mino-lang-*.vsix
 - **Injection in JS/TS**: Highlights blocks in `.js/.ts/.jsx/.tsx` when using `const name = @html/@css { ... }`
 - **Snippets**: Quick insertion for `const name = @css {}` and `const name = @html {}`
 - **Hover/Completion/Validation**: Helpers and diagnostics for v2.0 assignment syntax
+- **Compiler**: Compile `.mino` → `.js` with param detection from `${...}` interpolations
 
 ## Quick Start
 
@@ -43,32 +44,36 @@ const MyButton = @html {
 
 // normal js
 const render = (name) => MyButton(name)
+
+// Compiled JS (simplified)
+// const styleSheet = () => `.primary-button { padding: 8px; color: black; }`
+// const MyButton = (name) => `<button class="primary-button">${name}</button>`
 ```
-
-## Configuration
-
-- `mino.autoCompile`: Automatically compile .mino files on save (default: true)
-- `mino.outputDirectory`: Output directory for compiled files (default: "./dist")
-- `mino.showCompileNotifications`: Show notifications when compilation completes (default: true)
 
 ## Commands
 
-- `Mino: Compile File` - Compile the current .mino file
-- `Mino: Create New Component` - Create a new component with template
+- `Mino: Compile Mino File` (`mino.compileFile`): Compile the active `.mino` file to JS
+
+## Settings
+
+- `mino.autoCompile` (boolean, default: true): Automatically compile `.mino` files on save
+- `mino.outputDirectory` (string, default: "./dist"): Output directory for compiled JS (workspace-relative or absolute)
+- `mino.showCompileNotifications` (boolean, default: true): Show a notification when compilation completes or fails
+
+## How it works
+
+- Assignment blocks compile to JS functions with detected parameters based on `${...}` expressions.
+- Bare blocks (`@html { ... }`, `@css { ... }`) are allowed and compiled to inert `void` template expressions for valid JS output.
 
 ## Requirements
 
 - VS Code 1.74.0 or higher
 - Node.js (for compilation features)
 
-## Release Notes
+## Testing
 
-### 1.0.4
-
-- Initial release
-- Full syntax highlighting
-- Basic compilation support
-- IntelliSense and snippets
+- A basic sample is under `src/tests/example.mino`. Saving this file will generate `dist/example.js`.
+- You can run the built compiler via Node to verify output, or use the command palette to compile the active file.
 
 ## Contributing
 

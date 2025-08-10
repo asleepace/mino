@@ -1,0 +1,24 @@
+// Generated from basic.mino
+// Test Mino compile
+
+
+
+// declare html fragments as variables!
+const view = () => `<div class="greet">Welcome to mino!</div>`;
+
+// declare css styles as variables!
+const styles = () => `.greet { color: red; }`;
+
+// easily interpolate values
+const message = "Hello, world!"
+
+const greeting = (styles, message) => `<style>${styles}</style>
+  <p class="greet">${message}</p>`;
+
+
+function greet(name) {
+  return view(`${name}`);
+}
+
+export { view, styles, greet };
+
