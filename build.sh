@@ -1,5 +1,9 @@
 # !/bin/zsh
 # 1. Ensure everything compiles cleanly
+rm -rf node_modules package-lock.json mino-lang-*.vsix
+npm i 
+npm version patch
+
 npm run compile
 
 # 2. Package the extension

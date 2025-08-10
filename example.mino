@@ -1,31 +1,33 @@
 // Test Mino syntax highlighting
 import { users } from './data.js';
 
-const styles = @css {
-  .container {
-    display: flex;
-    background: #f0f0f0;
-    padding: 16px;
-  }
-  
-  .button {
-    background: #007bff;
-    color: white;
-    border: none;
-  }
+@html {
+  <p>Hello, world!<p>
 }
 
-const template = @html {
+@html myItem {
+  <div class="flex"></div>
+}
+
+@html componentStyle(args) {
   <div class="container">
-    <h1>Hello ${name}!</h1>
-    <button onclick="handleClick('${id}')" class="button">
-      ${buttonText}
-    </button>
-  </div>
+    <p>{args}</p>
+  </div>  
 }
 
-function handleClick(id) {
-  console.log('Clicked:', id);
+@css myStyleSheet {
+  :host {
+    flex: 1;
+  }
 }
 
-export { styles, template };
+@css styleSheet(args) {
+  :host {
+    background-color: red;
+  }
+}
+
+const item = componentStyle()
+
+
+

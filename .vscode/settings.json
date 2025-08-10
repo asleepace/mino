@@ -36,6 +36,25 @@
         }
       },
       {
+        "scope": "variable.parameter.mino",
+        "settings": {
+          "foreground": "#3498DB",
+          "fontStyle": "italic"
+        }
+      },
+      {
+        "scope": "punctuation.definition.parameters.begin.mino, punctuation.definition.parameters.end.mino",
+        "settings": {
+          "foreground": "#FF1493"
+        }
+      },
+      {
+        "scope": "punctuation.separator.parameter.mino",
+        "settings": {
+          "foreground": "#7F8C8D"
+        }
+      },
+      {
         "scope": "punctuation.definition.template-expression.begin.mino, punctuation.definition.template-expression.end.mino",
         "settings": {
           "foreground": "#FF6B35",
@@ -102,13 +121,13 @@
         }
       },
       {
-        "scope": "meta.html.mino",
+        "scope": "meta.html.block.mino",
         "settings": {
           "background": "#2C3E5008"
         }
       },
       {
-        "scope": "meta.css.mino",
+        "scope": "meta.css.block.mino",
         "settings": {
           "background": "#34495E08"
         }

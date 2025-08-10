@@ -2,7 +2,7 @@
   "name": "mino-lang",
   "displayName": "Mino Language Support",
   "description": "Syntax highlighting for Mino language with embedded HTML and CSS",
-  "version": "1.0.5",
+  "version": "1.0.8",
   "publisher": "asleepace",
   "engines": {
     "vscode": "^1.74.0"

@@ -1,62 +1,84 @@
 {
-  "HTML Block": {
-    "prefix": ["html", "@html"],
-    "body": [
-      "const ${1:templateName} = @html {",
-      "  ${2:<!-- HTML content with \\${variable} interpolation -->}",
-      "}"
-    ],
-    "description": "Create an HTML template block"
-  },
   "CSS Block": {
     "prefix": ["css", "@css"],
     "body": [
-      "const ${1:styleName} = @css {",
+      "@css ${1:styleName}(${2:params}) {",
+      "  ${3:/* CSS styles */}",
+      "}"
+    ],
+    "description": "Create a CSS block with parameters"
+  },
+  "HTML Block": {
+    "prefix": ["html", "@html"],
+    "body": [
+      "@html ${1:templateName}(${2:params}) {",
+      "  ${3:<!-- HTML content -->}",
+      "}"
+    ],
+    "description": "Create an HTML block with parameters"
+  },
+  "CSS Block - No Parameters": {
+    "prefix": ["css0", "css-empty"],
+    "body": [
+      "@css ${1:styleName}() {",
       "  ${2:/* CSS styles */}",
       "}"
     ],
-    "description": "Create a CSS style block"
+    "description": "Create a CSS block without parameters"
   },
-  "Button HTML": {
-    "prefix": "btn",
+  "HTML Block - No Parameters": {
+    "prefix": ["html0", "html-empty"],
     "body": [
-      "const ${1:buttonTemplate} = @html {",
-      "  <button class=\"btn\" onclick=\"${2:handleClick}('\\${${3:id}}')\" ${4:disabled=\"\\${disabled}\"}>",
-      "    \\${${5:text}}",
+      "@html ${1:templateName}() {",
+      "  ${2:<!-- HTML content -->}",
+      "}"
+    ],
+    "description": "Create an HTML block without parameters"
+  },
+  "Button Component": {
+    "prefix": "btn-component",
+    "body": [
+      "@css ${1:buttonStyles}(${2:primaryColor, textColor}) {",
+      "  .btn {",
+      "    background: ${${2:primaryColor}};",
+      "    color: ${${3:textColor}};",
+      "    border: none;",
+      "    padding: 8px 16px;",
+      "    border-radius: 4px;",
+      "    cursor: pointer;",
+      "    transition: opacity 0.2s;",
+      "  }",
+      "  ",
+      "  .btn:hover {",
+      "    opacity: 0.8;",
+      "  }",
+      "}",
+      "",
+      "@html ${4:buttonTemplate}(${5:text, onClick, className}) {",
+      "  <button class=\"btn ${${6:className}}\" onclick=\"${${7:onClick}}\">",
+      "    ${${8:text}}",
       "  </button>",
       "}"
     ],
-    "description": "Create a button HTML template"
-  },
-  "Container HTML": {
-    "prefix": "container",
-    "body": [
-      "const ${1:containerTemplate} = @html {",
-      "  <div class=\"container\" ${2:style=\"\\${containerStyle}\"}>",
-      "    \\${${3:children}}",
-      "  </div>",
-      "}"
-    ],
-    "description": "Create a container HTML template"
+    "description": "Create a complete button component with styles and template"
   },
   "Card Component": {
-    "prefix": "card",
+    "prefix": "card-component",
     "body": [
-      "const ${1:cardStyles} = @css {",
+      "@css ${1:cardStyles}() {",
       "  .card {",
+      "    background: white;",
       "    border: 1px solid #ddd;",
       "    border-radius: 8px;",
-      "    padding: 1rem;",
-      "    margin: 0.5rem;",
-      "    background: white;",
+      "    padding: 24px;",
       "    box-shadow: 0 2px 4px rgba(0,0,0,0.1);",
       "  }",
       "  ",
       "  .card-title {",
-      "    color: ${2:#333};",
-      "    margin: 0 0 0.5rem 0;",
       "    font-size: 1.25rem;",
       "    font-weight: 600;",
+      "    margin-bottom: 8px;",
+      "    color: #333;",
       "  }",
       "  ",
       "  .card-content {",
@@ -65,203 +87,205 @@
       "  }",
       "}",
       "",
-      "const ${3:cardTemplate} = @html {",
+      "@html ${2:cardTemplate}(${3:title, content}) {",
       "  <div class=\"card\">",
-      "    <h3 class=\"card-title\">\\${${4:title}}</h3>",
-      "    <div class=\"card-content\">\\${${5:content}}</div>",
+      "    <h3 class=\"card-title\">${${4:title}}</h3>",
+      "    <div class=\"card-content\">${${5:content}}</div>",
       "  </div>",
       "}"
     ],
-    "description": "Create a card component with HTML and CSS"
+    "description": "Create a card component with styles and template"
   },
-  "Form Input": {
-    "prefix": "input",
+  "User Profile": {
+    "prefix": "user-profile",
     "body": [
-      "const ${1:inputTemplate} = @html {",
-      "  <div class=\"form-group\">",
-      "    <label for=\"\\${${2:id}}\">\\${${3:label}}</label>",
-      "    <input ",
-      "      type=\"${4:text}\" ",
-      "      id=\"\\${${2:id}}\" ",
-      "      name=\"\\${${5:name}}\" ",
-      "      value=\"\\${${6:value}}\" ",
-      "      placeholder=\"\\${${7:placeholder}}\"",
-      "      ${8:required}",
-      "    />",
-      "  </div>",
-      "}"
-    ],
-    "description": "Create a form input template"
-  },
-  "Navigation": {
-    "prefix": "nav",
-    "body": [
-      "const ${1:navTemplate} = @html {",
-      "  <nav class=\"navbar\">",
-      "    <div class=\"nav-brand\">",
-      "      <a href=\"/\">\\${${2:brandName}}</a>",
+      "@css ${1:userProfileStyles}() {",
+      "  .user-profile {",
+      "    display: flex;",
+      "    align-items: center;",
+      "    gap: 16px;",
+      "    padding: 16px;",
+      "    border-radius: 8px;",
+      "    background: #f8f9fa;",
+      "  }",
+      "  ",
+      "  .user-avatar {",
+      "    width: 64px;",
+      "    height: 64px;",
+      "    border-radius: 50%;",
+      "    object-fit: cover;",
+      "  }",
+      "  ",
+      "  .user-info h3 {",
+      "    margin: 0 0 4px 0;",
+      "    color: #333;",
+      "  }",
+      "  ",
+      "  .user-info p {",
+      "    margin: 0;",
+      "    color: #666;",
+      "    font-size: 0.9rem;",
+      "  }",
+      "}",
+      "",
+      "@html ${2:userProfileTemplate}(${3:user}) {",
+      "  <div class=\"user-profile\">",
+      "    <img src=\"${${4:user.avatar}}\" alt=\"${${5:user.name}}\" class=\"user-avatar\" />",
+      "    <div class=\"user-info\">",
+      "      <h3>${${6:user.name}}</h3>",
+      "      <p>${${7:user.email}}</p>",
+      "      <p>${${8:user.role}}</p>",
       "    </div>",
+      "  </div>",
+      "}"
+    ],
+    "description": "Create a user profile component"
+  },
+  "Navigation Menu": {
+    "prefix": "nav-menu",
+    "body": [
+      "@css ${1:navStyles}() {",
+      "  .navbar {",
+      "    display: flex;",
+      "    justify-content: space-between;",
+      "    align-items: center;",
+      "    padding: 1rem 2rem;",
+      "    background: #333;",
+      "    color: white;",
+      "  }",
+      "  ",
+      "  .nav-brand {",
+      "    font-size: 1.5rem;",
+      "    font-weight: bold;",
+      "  }",
+      "  ",
+      "  .nav-links {",
+      "    display: flex;",
+      "    list-style: none;",
+      "    gap: 2rem;",
+      "    margin: 0;",
+      "    padding: 0;",
+      "  }",
+      "  ",
+      "  .nav-links a {",
+      "    color: white;",
+      "    text-decoration: none;",
+      "    transition: opacity 0.2s;",
+      "  }",
+      "  ",
+      "  .nav-links a:hover {",
+      "    opacity: 0.8;",
+      "  }",
+      "}",
+      "",
+      "@html ${2:navTemplate}(${3:brandName, navItems}) {",
+      "  <nav class=\"navbar\">",
+      "    <div class=\"nav-brand\">${${4:brandName}}</div>",
       "    <ul class=\"nav-links\">",
-      "      \\${${3:navItems}.map(item => `",
-      "        <li><a href=\"\\${item.href}\" class=\"\\${item.active ? 'active' : ''}\">\\${item.text}</a></li>",
+      "      ${${5:navItems}.map(item => `",
+      "        <li><a href=\"${item.href}\">${item.text}</a></li>",
       "      `).join('')}",
       "    </ul>",
       "  </nav>",
       "}"
     ],
-    "description": "Create a navigation template with dynamic items"
+    "description": "Create a navigation component"
   },
-  "List Template": {
-    "prefix": "list",
+  "Form Input": {
+    "prefix": "form-input",
     "body": [
-      "const ${1:listTemplate} = @html {",
-      "  <${2:ul} class=\"${3:list}\">",
-      "    \\${${4:items}.map(item => `",
-      "      <${5:li} class=\"${6:list-item}\">\\${${7:item.text}}</${5:li}>",
-      "    `).join('')}",
-      "  </${2:ul}>",
-      "}"
-    ],
-    "description": "Create a dynamic list template"
-  },
-  "Template Interpolation": {
-    "prefix": "${",
-    "body": "\\${${1:variable}}$0",
-    "description": "Insert template interpolation"
-  },
-  "CSS Flexbox": {
-    "prefix": "flex",
-    "body": [
-      "const ${1:flexStyles} = @css {",
-      "  .${2:flex-container} {",
-      "    display: flex;",
-      "    ${3:flex-direction: row;}",
-      "    ${4:justify-content: flex-start;}",
-      "    ${5:align-items: stretch;}",
-      "    ${6:gap: 1rem;}",
-      "  }",
-      "}"
-    ],
-    "description": "Create flexbox CSS styles"
-  },
-  "CSS Grid": {
-    "prefix": "grid",
-    "body": [
-      "const ${1:gridStyles} = @css {",
-      "  .${2:grid-container} {",
-      "    display: grid;",
-      "    grid-template-columns: ${3:repeat(auto-fit, minmax(250px, 1fr))};",
-      "    ${4:grid-template-rows: auto;}",
-      "    gap: ${5:1rem};",
-      "    ${6:padding: 1rem;}",
-      "  }",
-      "}"
-    ],
-    "description": "Create CSS grid styles"
-  },
-  "Media Query": {
-    "prefix": "media",
-    "body": [
-      "@media (${1:max-width}: ${2:768px}) {",
-      "  ${3:/* Mobile styles */}",
-      "}"
-    ],
-    "description": "Create a media query"
-  },
-  "Modal Template": {
-    "prefix": "modal",
-    "body": [
-      "const ${1:modalStyles} = @css {",
-      "  .modal-overlay {",
-      "    position: fixed;",
-      "    top: 0;",
-      "    left: 0;",
-      "    right: 0;",
-      "    bottom: 0;",
-      "    background: rgba(0, 0, 0, 0.5);",
-      "    display: flex;",
-      "    align-items: center;",
-      "    justify-content: center;",
-      "    z-index: 1000;",
+      "@css ${1:inputStyles}() {",
+      "  .form-group {",
+      "    margin-bottom: 1rem;",
       "  }",
       "  ",
-      "  .modal {",
-      "    background: white;",
-      "    border-radius: 8px;",
-      "    padding: 2rem;",
-      "    max-width: 90vw;",
-      "    max-height: 90vh;",
-      "    overflow: auto;",
+      "  .form-label {",
+      "    display: block;",
+      "    margin-bottom: 0.5rem;",
+      "    font-weight: 500;",
+      "    color: #333;",
+      "  }",
+      "  ",
+      "  .form-input {",
+      "    width: 100%;",
+      "    padding: 0.75rem;",
+      "    border: 1px solid #ddd;",
+      "    border-radius: 4px;",
+      "    font-size: 1rem;",
+      "  }",
+      "  ",
+      "  .form-input:focus {",
+      "    outline: none;",
+      "    border-color: #007bff;",
+      "    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);",
       "  }",
       "}",
       "",
-      "const ${2:modalTemplate} = @html {",
-      "  <div class=\"modal-overlay\" onclick=\"\\${${3:onClose}}\">",
-      "    <div class=\"modal\" onclick=\"event.stopPropagation()\">",
-      "      <div class=\"modal-header\">",
-      "        <h2>\\${${4:title}}</h2>",
-      "        <button onclick=\"\\${${3:onClose}}\" class=\"close-btn\">&times;</button>",
-      "      </div>",
-      "      <div class=\"modal-body\">",
-      "        \\${${5:content}}",
-      "      </div>",
-      "    </div>",
+      "@html ${2:inputTemplate}(${3:label, name, type, value, placeholder}) {",
+      "  <div class=\"form-group\">",
+      "    <label class=\"form-label\" for=\"${${4:name}}\">${${5:label}}</label>",
+      "    <input ",
+      "      class=\"form-input\"",
+      "      type=\"${${6:type}}\"",
+      "      id=\"${${7:name}}\"",
+      "      name=\"${${8:name}}\"",
+      "      value=\"${${9:value}}\"",
+      "      placeholder=\"${${10:placeholder}}\"",
+      "    />",
       "  </div>",
       "}"
     ],
-    "description": "Create a modal component with overlay"
+    "description": "Create a form input component"
   },
-  "Full Page Template": {
-    "prefix": "page",
+  "Template Interpolation": {
+    "prefix": ["${", "interpolate"],
+    "body": "${${1:variable}}$0",
+    "description": "Insert template interpolation"
+  },
+  "Complete Page": {
+    "prefix": "page-complete",
     "body": [
       "// ${1:PageName}.mino",
-      "import { ${2:dependencies} } from '${3:./components}';",
+      "import { ${2:dependencies} } from '${3:./data}';",
       "",
-      "const ${4:pageStyles} = @css {",
+      "@css ${4:pageStyles}() {",
       "  .page {",
       "    min-height: 100vh;",
       "    display: flex;",
       "    flex-direction: column;",
+      "    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;",
       "  }",
       "  ",
       "  .main-content {",
       "    flex: 1;",
       "    padding: 2rem;",
+      "    max-width: 1200px;",
+      "    margin: 0 auto;",
+      "    width: 100%;",
       "  }",
       "}",
       "",
-      "const ${5:pageTemplate} = @html {",
+      "@html ${5:pageTemplate}(${6:title, content}) {",
       "  <div class=\"page\">",
-      "    <style>\\${${4:pageStyles}()}</style>",
       "    <header>",
-      "      \\${${6:headerTemplate}()}",
+      "      <h1>${${7:title}}</h1>",
       "    </header>",
       "    <main class=\"main-content\">",
-      "      \\${${7:content}}",
+      "      ${${8:content}}",
       "    </main>",
       "    <footer>",
-      "      \\${${8:footerTemplate}()}",
+      "      <p>&copy; 2025 My App</p>",
       "    </footer>",
       "  </div>",
       "}",
       "",
-      "export { ${4:pageStyles}, ${5:pageTemplate} };"
+      "// Regular JavaScript",
+      "function render${9:Page}() {",
+      "  return ${5:pageTemplate}('${10:Page Title}', '${11:Page content here}');",
+      "}",
+      "",
+      "export { ${4:pageStyles}, ${5:pageTemplate}, render${9:Page} };"
     ],
-    "description": "Create a complete page template with imports and exports"
-  },
-  "Event Handler": {
-    "prefix": "onclick",
-    "body": "onclick=\"${1:handleClick}('\\${${2:id}}')\"$0",
-    "description": "Create an onclick event handler with interpolation"
-  },
-  "CSS Variable": {
-    "prefix": "var",
-    "body": "var(--${1:variable-name}${2:, ${3:fallback}})$0",
-    "description": "Insert a CSS custom property"
-  },
-  "Export Statement": {
-    "prefix": "export",
-    "body": "export { ${1:templates}, ${2:styles} };$0",
-    "description": "Create an export statement for templates and styles"
+    "description": "Create a complete page template with styles and structure"
   }
 }

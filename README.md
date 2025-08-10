@@ -32,46 +32,20 @@ code --install-extension mino-lang-*.vsix
 
 ## Example Component
 
-\`\`\`mino
-@template {
-  <div class="my-button {disabled ? 'disabled' : ''}">
-    <button onclick="{handleClick}">{label}</button>
-  </div>
+```mino
+// css syntax highlighting
+@css styleSheet() {
+  .primary-button { padding: 8px; color: black; }
 }
-@end
 
-@style {
-  .my-button button {
-    background: var(--primary-color, #007bff);
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    color: white;
-    cursor: pointer;
-  }
-  
-  .my-button.disabled button {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+// html syntax highlighting
+@html MyButton({ name }) {
+  <button class="primary-button">${name}</button>
 }
-@end
 
-@prop (reactive) label = "Click me"
-@prop (reactive) disabled = false
-
-@method (private) handleClick() {
-  if (!this.disabled) {
-    this.emit('button-click', { label: this.label });
-  }
-}
-@end
-
-@onMounted {
-  console.log('Button component mounted');
-}
-@end
-\`\`\`
+// normal js
+const render = () => MyButton({ name })
+```
 
 ## Configuration
 
