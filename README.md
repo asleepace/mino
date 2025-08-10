@@ -1,310 +1,340 @@
 # Mino
 A simple meta language used to generate vanilla JS based web components.
 
-# Language Specification v1.3
+# Component Language Specification v1.4.0
 
-## Unified Syntax
+## Core Philosophy: Maximum Simplicity
 
-All language constructs follow a single, consistent pattern:
+Focus on the essentials: **properties**, **lifecycle**, **HTML**, **CSS**, **JS**. Everything else is convenience via aliases and directives.
+
+## Unified Syntax (Simplified)
 
 ```
-[@directive] [(...modifiers)] [name[:TypeConstructor]] [= [value]]
+[@directive] [(...modifiers)] [name] [= value]
   [content]
 [@end]
 ```
 
-## Core Directives (Minimal Set)
+**Removed**: Type hints (`:Type`) - unnecessary complexity for web components where most attributes are strings.
 
-### 1. `@alias` - Remapping and composition
+## Only 3 Core Constructs
+
+### 1. `@alias` - Remapping, composition, and expansion
 ```objc
-@alias newName = 'originalName'
-@alias (type) string = String
-@alias (modifier) dynamic = ['reactive', 'public']
+// Simple remapping
+@alias onClick = 'onclick'
+
+// Modifier composition  
+@alias (modifier) default = ['public', 'kebab', 'reactive']
+
+// Function definitions
+@alias (fn) slugify = (str) => str.toLowerCase().replace(/\s+/g, '-')
+
+// Directive expansion (pipeline left→right)
+@alias (directive) smartProp = ['public', 'kebab', 'reactive', 'validate']
+
+// Token remapping for different contexts
+@alias (token) component.name = 'customElements.define'
+@alias (token) style.scope = 'this.shadowRoot'
 ```
 
 ### 2. `@directive` - Code generation functions
 ```objc
 @directive directiveName(ast) {
-  // JavaScript code generation
-  return code;
+  return generatedCode;
 }
 @end
 ```
 
-### 3. `@macro` - Template expansion
+### 3. `@[anything]` - User-defined constructs
 ```objc
-@macro (args...) macroName = expanded_syntax
+@prop name = value
+@style { css } @end  
+@script { js } @end
+@component { html } @end
+@lifecycle connectedCallback { js } @end
 ```
 
-### 4. `@prop` - Properties (using directives for behavior)
-```objc
-@prop (modifiers...) name: TypeConstructor = value
-```
+All user constructs are processed by directives in a left→right pipeline.
 
-### 5. `@block` - Multi-line content
+## Language Features for VS Code
+
+### CSS Syntax Highlighting
 ```objc
-@block (modifiers...) name {
-  content
+@style {
+  /* CSS syntax highlighting here */
+  .button {
+    background: blue;
+    border: none;
+  }
 }
 @end
 ```
 
-## Type System via Constructor Functions
-
+### HTML Syntax Highlighting  
 ```objc
-// Built-in type aliases
-@alias (type) string = String
-@alias (type) number = Number  
-@alias (type) boolean = Boolean
-@alias (type) int = parseInt
-@alias (type) float = parseFloat
-@alias (type) json = (str) => JSON.parse(str)
-@alias (type) array = Array
-@alias (type) object = Object
-
-// Custom type constructors
-@alias (type) email = (str) => {
-  if (!/\S+@\S+\.\S+/.test(str)) throw new Error('Invalid email');
-  return str;
+@component {
+  <!-- HTML syntax highlighting here -->
+  <div class="card">
+    <h2>{title}</h2>
+    <button onclick="{handleClick}">Click me</button>
+  </div>
 }
-
-@alias (type) positiveNumber = (val) => {
-  const num = Number(val);
-  if (num <= 0) throw new Error('Must be positive');
-  return num;
-}
+@end
 ```
 
-## Computed Properties via Directive
-
+### JavaScript Syntax Highlighting
 ```objc
-@directive computed(ast) {
-  if (!ast.modifiers.includes('computed')) return null;
-  
-  return `
-    get ${ast.targetName}() {
-      return (${ast.value})();
-    }
-  `;
+@script {
+  // JavaScript syntax highlighting here
+  const handleClick = () => {
+    console.log('Clicked!');
+    this.dispatchEvent(new CustomEvent('click'));
+  };
 }
 @end
 
-// Usage:
-@prop (computed) fullName: string = () => `${this.firstName} ${this.lastName}`
-@prop (computed) isAdult: boolean = () => this.age >= 18
-@prop (computed) displayData: json = () => JSON.stringify(this.userData)
+@lifecycle connectedCallback {
+  // JavaScript syntax highlighting here
+  this.render();
+  this.setupEventListeners();
+}
+@end
 ```
 
-## Reactive Properties via Directive
+## Enhanced @alias Capabilities
 
+### Function Definitions
 ```objc
+@alias (fn) validate = (value, rules) => {
+  // Validation logic
+  if (!rules.required && !value) return true;
+  if (rules.minLength && value.length < rules.minLength) return false;
+  return true;
+}
+
+@alias (fn) emit = (eventName, detail) => {
+  return `this.dispatchEvent(new CustomEvent('${eventName}', { detail: ${JSON.stringify(detail)}, bubbles: true }));`;
+}
+```
+
+### Directive Pipeline Expansion
+```objc
+// Define a pipeline of directives
+@alias (directive) smartProp = ['public', 'kebab', 'reactive', 'validate']
+
+// Usage - all directives run left→right
+@prop (smartProp) userName = "guest"
+
+// Equivalent to:
+@prop (public, kebab, reactive, validate) userName = "guest"
+```
+
+### Token Context Remapping
+```objc
+// Different behavior based on context
+@alias (token) define.component = 'customElements.define'
+@alias (token) define.property = 'Object.defineProperty'
+@alias (token) scope.style = 'this.shadowRoot.adoptedStyleSheets'
+@alias (token) scope.global = 'document.head'
+```
+
+## Minimal Standard Library
+
+### Core Directives
+```objc
+@directive public(ast) {
+  return `static get observedAttributes() { return ['${kebabCase(ast.name)}']; }`;
+}
+
 @directive reactive(ast) {
-  if (!ast.modifiers.includes('reactive')) return null;
-  
-  const typeCheck = ast.typeConstructor ? 
-    `value = ${ast.typeConstructor.name}(value);` : '';
-  
   return `
-    set ${ast.targetName}(value) {
-      ${typeCheck}
-      const oldValue = this._${ast.targetName};
-      this._${ast.targetName} = value;
-      if (oldValue !== value) this.requestUpdate();
+    set ${ast.name}(value) {
+      this._${ast.name} = value;
+      this.requestUpdate();
     }
-    
-    get ${ast.targetName}() {
-      return this._${ast.targetName} ?? ${ast.value};
+    get ${ast.name}() { return this._${ast.name} ?? ${ast.value}; }
+  `;
+}
+
+@directive kebab(ast) {
+  // Auto-generate kebab-case attribute mapping
+  const attrName = ast.name.replace(/([A-Z])/g, '-$1').toLowerCase();
+  return `// Attribute: ${attrName}`;
+}
+
+@directive validate(ast) {
+  return `
+    set ${ast.name}(value) {
+      if (!this.validate(value, ${JSON.stringify(ast.validationRules)})) {
+        throw new Error('Validation failed for ${ast.name}');
+      }
+      this._${ast.name} = value;
     }
   `;
 }
-@end
 ```
 
-## Enhanced Examples
-
-### Simple Component
+### Convenience Aliases
 ```objc
-@block component UserCard {
+// Common patterns
+@alias (directive) default = ['public', 'reactive', 'kebab']
+@alias (directive) internal = ['private']
+@alias (directive) computed = ['getter']
+
+// Function helpers
+@alias (fn) emit = (event, data) => `this.dispatchEvent(new CustomEvent('${event}', {detail: ${JSON.stringify(data)}}))`
+@alias (fn) query = (selector) => `this.shadowRoot.querySelector('${selector}')`
+@alias (fn) queryAll = (selector) => `this.shadowRoot.querySelectorAll('${selector}')`
+```
+
+## Complete Example
+
+```objc
+// UserCard.comp
+
+@component {
   <div class="user-card {isOnline ? 'online' : 'offline'}">
     <h3>{fullName}</h3>
     <p>{email}</p>
-    <span class="age">Age: {age}</span>
     <button onclick="{handleContact}">Contact</button>
   </div>
 }
 @end
 
-// Basic properties with type validation
-@prop firstName: string = "John"
-@prop lastName: string = "Doe"  
-@prop age: int = 25
-@prop email: email = "john@example.com"
-@prop isOnline: boolean = false
-
-// Computed properties
-@prop (computed) fullName: string = () => `${this.firstName} ${this.lastName}`
-@prop (computed) canVote: boolean = () => this.age >= 18
-
-// Reactive properties (trigger re-render on change)
-@prop (reactive) theme: string = "light"
-@prop (reactive) userPrefs: json = () => ({})
-
-// Event handlers
-@block (private) handleContact {
-  this.dispatchEvent(new CustomEvent('contact', {
-    detail: { fullName: this.fullName, email: this.email }
-  }));
-}
-@end
-
-// Styles
-@block (css) style {
+@style {
   .user-card {
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     padding: 1rem;
     border-radius: 8px;
   }
-  
-  .user-card.online {
-    border-color: green;
+  .user-card.online { border-color: green; }
+}
+@end
+
+// Properties with smart defaults
+@prop (default) firstName = "John"
+@prop (default) lastName = "Doe" 
+@prop (default) email = "john@example.com"
+@prop (default) isOnline = false
+
+// Computed property
+@prop (computed) fullName = () => `${this.firstName} ${this.lastName}`
+
+// Event handlers
+@script {
+  handleContact() {
+    this.emit('contact', { name: this.fullName, email: this.email });
   }
+}
+@end
+
+// Lifecycle
+@lifecycle connectedCallback {
+  this.render();
 }
 @end
 ```
 
-### Advanced Modifiers
-```objc
-// Modifier composition
-@alias (modifier) public = ['reactive', 'attribute']
-@alias (modifier) internal = ['private', 'static']
+## VS Code Language Extension Structure
 
-// Smart attribute directive
-@directive attribute(ast) {
-  if (!ast.modifiers.includes('attribute')) return null;
-  
-  const attrName = ast.targetName.replace(/([A-Z])/g, '-$1').toLowerCase();
-  
-  return `
-    static get observedAttributes() {
-      return [...(super.observedAttributes || []), '${attrName}'];
-    }
-    
-    attributeChangedCallback(name, oldValue, newValue) {
-      if (name === '${attrName}') {
-        this.${ast.targetName} = newValue;
+```json
+{
+  "name": "component-lang",
+  "contributes": {
+    "languages": [{
+      "id": "component",
+      "extensions": [".comp"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "component", 
+      "scopeName": "source.component",
+      "path": "./syntaxes/component.tmLanguage.json",
+      "embeddedLanguages": {
+        "meta.style.component": "css",
+        "meta.script.component": "javascript", 
+        "meta.component.component": "html"
       }
-      super.attributeChangedCallback?.(name, oldValue, newValue);
-    }
-  `;
-}
-@end
-
-// Usage with composed modifiers
-@prop (public) userName: string = "guest"  // reactive + attribute
-@prop (internal) debugMode: boolean = false  // private + static
-```
-
-### Complex Types and Validation
-```objc
-// Custom type with validation
-@alias (type) userRole = (role) => {
-  const validRoles = ['admin', 'user', 'guest'];
-  if (!validRoles.includes(role)) {
-    throw new Error(`Invalid role: ${role}. Must be one of: ${validRoles.join(', ')}`);
+    }]
   }
-  return role;
-}
-
-// Array type with item validation
-@alias (type) stringArray = (arr) => {
-  if (!Array.isArray(arr)) throw new Error('Must be an array');
-  return arr.map(String);
-}
-
-// Complex object type
-@alias (type) userConfig = (obj) => {
-  const config = typeof obj === 'string' ? JSON.parse(obj) : obj;
-  return {
-    theme: String(config.theme || 'light'),
-    notifications: Boolean(config.notifications ?? true),
-    language: String(config.language || 'en')
-  };
-}
-
-// Usage
-@prop role: userRole = "guest"
-@prop tags: stringArray = []
-@prop config: userConfig = { theme: 'dark', notifications: true }
-```
-
-## AST Structure
-
-```typescript
-interface DirectiveAST {
-  directive: string;           // @prop, @block, etc.
-  targetName: string;          // property/block name
-  modifiers: string[];         // computed, reactive, etc.
-  typeConstructor?: Function;  // String, parseInt, custom validator
-  value?: any;                 // default value or expression
-  content?: string;            // block content
-  context: {
-    componentName: string;
-    aliases: Map<string, any>;
-    directives: Map<string, Function>;
-  };
 }
 ```
 
-## Compilation Process
-
-### Phase 1: Parse @alias definitions
-```javascript
-const typeAliases = new Map([
-  ['string', String],
-  ['number', Number],
-  ['email', (str) => { /* validation */ }]
-]);
-
-const modifierAliases = new Map([
-  ['public', ['reactive', 'attribute']],
-  ['internal', ['private', 'static']]
-]);
-```
-
-### Phase 2: Expand modifier aliases
-```javascript
-// @prop (public) userName: string = "guest"
-// becomes: @prop (reactive, attribute) userName: string = "guest"
-```
-
-### Phase 3: Process directives
-```javascript
-ast.blocks.forEach(block => {
-  block.modifiers.forEach(modifier => {
-    if (directives.has(modifier)) {
-      const code = directives.get(modifier)(block);
-      if (code) block.generatedCode.push(code);
+## TextMate Grammar (Simplified)
+```json
+{
+  "patterns": [
+    {
+      "name": "meta.style.component",
+      "begin": "@style\\s*\\{",
+      "end": "\\}\\s*@end",
+      "patterns": [{"include": "source.css"}]
+    },
+    {
+      "name": "meta.script.component", 
+      "begin": "@(script|lifecycle)\\s*[^{]*\\{",
+      "end": "\\}\\s*@end",
+      "patterns": [{"include": "source.js"}]
+    },
+    {
+      "name": "meta.component.component",
+      "begin": "@component\\s*\\{", 
+      "end": "\\}\\s*@end",
+      "patterns": [{"include": "text.html.basic"}]
     }
-  });
-});
-```
-
-### Phase 4: Generate Web Component
-```javascript
-class ${ComponentName} extends HTMLElement {
-  ${generatedProperties}
-  ${generatedMethods}
-  ${generatedLifecycle}
+  ]
 }
 ```
+
+## Compilation Pipeline
+
+### Phase 1: Alias Resolution
+```javascript
+// Expand directive aliases
+if (aliasType === 'directive') {
+  modifiers = modifiers.flatMap(mod => aliases.get(mod) || [mod]);
+}
+
+// Expand function aliases  
+if (aliasType === 'fn') {
+  // Replace function calls with implementations
+}
+```
+
+### Phase 2: Directive Pipeline  
+```javascript
+// Process modifiers left→right as pipeline
+modifiers.reduce((ast, modifier) => {
+  if (directives.has(modifier)) {
+    ast.generatedCode.push(directives.get(modifier)(ast));
+  }
+  return ast;
+}, initialAST);
+```
+
+### Phase 3: Code Generation
+```javascript
+// Combine all generated code into Web Component
+generateWebComponent(processedAST);
+```
+
+## Edge Cases Handled
+
+1. **VS Code Syntax Highlighting**: Embedded languages for CSS/JS/HTML
+2. **Alias Functions**: Full function definitions via `@alias (fn)`
+3. **No Type Hints**: Simplified - web components are mostly strings anyway
+4. **Token Remapping**: Context-aware aliases for different situations
+5. **Directive Expansion**: Pipeline processing left→right
+6. **Flat Modifier Lists**: No nesting complexity
 
 ## Benefits
 
-1. **Unified Syntax** - Everything follows the same pattern
-2. **JavaScript-Native Types** - Use constructor functions, not special syntax
-3. **Composable Modifiers** - Mix and match behaviors cleanly
-4. **Runtime Validation** - Type constructors provide runtime safety
-5. **Minimal Core** - Only 5 directives, everything else is composition
-6. **Predictable** - Clear AST structure makes directives easy to write
+1. **Minimal Core**: Only 3 constructs (`@alias`, `@directive`, `@[custom]`)
+2. **VS Code Ready**: Built for syntax highlighting out of the box
+3. **Pipeline Processing**: Predictable left→right modifier processing
+4. **Infinite Extensibility**: Aliases and directives handle all edge cases
+5. **Web Component Native**: Designed specifically for web components
+6. **Zero Magic**: Everything is explicit and traceable
 
-This creates a language that feels like enhanced JavaScript rather than a completely foreign syntax!
+This design prioritizes **simplicity** and **VS Code integration** while maintaining infinite extensibility through the alias/directive system.
