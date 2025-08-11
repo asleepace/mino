@@ -15,15 +15,14 @@
   "javascript.validate.enable": false,
   "files.associations": {
     "*.mino": "mino",
-    "*.jsxm": "javascript",
-    
+    "*.jsxm": "javascript"
   },
   "[mino]": {
     "editor.insertSpaces": true,
     "editor.tabSize": 2,
     "editor.detectIndentation": false,
     "editor.autoIndent": "full",
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
     "editor.wordWrap": "on",
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.indentation": true,
@@ -31,5 +30,10 @@
     "editor.semanticHighlighting.enabled": true,
     "mino.autoCompile": true,
     "mino.compileOnSaveExtensions": [".mino", ".jsxm"]
+  },
+  "[javascript]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
   }
 }

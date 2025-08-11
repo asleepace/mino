@@ -326,6 +326,36 @@ function activate(context) {
     };
     // Apply to both 'mino' and 'javascript' so .mino and .jsxm get tags
     context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'mino' }, semanticProvider, legend), vscode.languages.registerDocumentSemanticTokensProvider({ language: 'javascript' }, semanticProvider, legend));
+    // Simple formatter (2-space indent) for Mino and .jsxm JavaScript
+    const formatDoc = (document) => {
+        const text = document.getText();
+        const lines = text.split(/\r?\n/);
+        let depth = 0;
+        const formatted = [];
+        for (let i = 0; i < lines.length; i++) {
+            const raw = lines[i].replace(/\s+$/g, '');
+            const trimmed = raw.trim();
+            // De-dent on leading closers
+            const leading = trimmed.match(/^[}\)]/);
+            if (leading)
+                depth = Math.max(0, depth - 1);
+            const indent = '  '.repeat(depth);
+            formatted.push(trimmed ? indent + trimmed : '');
+            // Adjust depth after line for openers/closers
+            const opens = (trimmed.match(/[\{\(]/g) || []).length;
+            const closes = (trimmed.match(/[\}\)]/g) || []).length;
+            depth = Math.max(0, depth + opens - closes);
+        }
+        const fullRange = new vscode.Range(document.positionAt(0), document.positionAt(text.length));
+        return [vscode.TextEdit.replace(fullRange, formatted.join('\n'))];
+    };
+    const minoFormatter = vscode.languages.registerDocumentFormattingEditProvider({ language: 'mino' }, {
+        provideDocumentFormattingEdits: (document) => formatDoc(document)
+    });
+    const jsxmFormatter = vscode.languages.registerDocumentFormattingEditProvider({ language: 'javascript', pattern: '**/*.jsxm' }, {
+        provideDocumentFormattingEdits: (document) => formatDoc(document)
+    });
+    context.subscriptions.push(minoFormatter, jsxmFormatter);
 }
 exports.activate = activate;
 function deactivate() {
