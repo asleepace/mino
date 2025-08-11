@@ -17,6 +17,9 @@
     "*.mino": "mino",
     "*.jsxm": "javascript"
   },
+  "material-icon-theme.files.associations": {
+    ".mino": "html"
+  },
   "[mino]": {
     "editor.insertSpaces": true,
     "editor.tabSize": 2,

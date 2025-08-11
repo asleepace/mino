@@ -2,7 +2,7 @@
   "name": "mino-lang",
   "displayName": "Mino Language Support",
   "description": "Syntax highlighting for JS with embedded HTML and CSS",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "publisher": "asleepace",
   "icon": "icons/mino.png",
   "engines": {
@@ -72,8 +72,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "dark": "./icons/mino-dark.png",
-          "light": "./icons/mino-light.png"
+          "dark": "./icons/mino32x32.png",
+          "light": "./icons/mino32x32.png"
         }
       },
       {

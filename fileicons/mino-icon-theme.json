@@ -1,24 +1,25 @@
 {
   "$schema": "vscode://schemas/icon-theme",
   "iconDefinitions": {
-    "mino-icon-dark": { "iconPath": "../icons/mino.png" },
-    "mino-icon-light": { "iconPath": "../icons/mino.png" }
+    "mino-icon-dark": { "iconPath": "../icons/mino32x32.png" },
+    "mino-icon-light": { "iconPath": "../icons/mino32x32.png" }
   },
   "fileExtensions": {
-    "mino": "mino-icon-dark"
+    "mino": "mino-icon-dark",
+    "jsxm": "mino-icon-dark"
   },
   "languageIds": {
-    "mino": "mino-icon-dark"
+    "mino": "mino-icon-dark",
+    "javascript": "mino-icon-dark"
   },
   "light": {
     "fileExtensions": {
-      "mino": "mino-icon-light"
+      "mino": "mino-icon-light",
+      "jsxm": "mino-icon-light"
     },
     "languageIds": {
-      "mino": "mino-icon-light"
+      "mino": "mino-icon-light",
+      "javascript": "mino-icon-light"
     }
   }
 }
-
-
-

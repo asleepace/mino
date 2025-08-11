@@ -1,11 +1,9 @@
-// README.md
 # Mino Language Support for VS Code
 
 This extension provides language support for Mino (`.mino`) files and `.jsxm` (JavaScript with inline `@html/@css`). It injects highlighting for blocks and compiles to JavaScript, and includes a TS server plugin so IntelliSense works in `.jsxm`.
 
-```.jsxm
-// NOTE: syntax will be highlighted when installed!
-const pageTitle = "JSXM"
+```mino
+// example usage
 
 const renderMinoStyles = @css(color) {
     :root {

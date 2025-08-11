@@ -12,7 +12,7 @@ const greetingStyle = @css {
 
 // dynamically interpolate values!
 
-const test1 = @html { <p>${id}</p> }
+const test1 = @html { <p>$0</p> }
 
 const greeting = @html(message) {
   <style>${greetingStyle()}</style>

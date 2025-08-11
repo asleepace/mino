@@ -272,23 +272,7 @@ function activate(context) {
     });
     // Add all subscriptions
     context.subscriptions.push(compileCommand, hoverProvider, completionProvider, diagnosticCollection, onDocumentChange, onDocumentOpen, definitionProvider, codeActionProvider, onDidSave);
-    // File decoration overlay for .mino files so users can keep their existing icon theme
-    const minoDecorationEmitter = new vscode.EventEmitter();
-    const minoDecorationProvider = {
-        onDidChangeFileDecorations: minoDecorationEmitter.event,
-        provideFileDecoration(uri) {
-            if (uri.fsPath.endsWith('.mino')) {
-                const decoration = new vscode.FileDecoration('M', 'Mino file');
-                decoration.propagate = false;
-                return decoration;
-            }
-            return undefined;
-        }
-    };
-    const decorationDisposable = vscode.window.registerFileDecorationProvider(minoDecorationProvider);
-    // Refresh decorations once on activation
-    minoDecorationEmitter.fire(undefined);
-    context.subscriptions.push(decorationDisposable);
+    // Note: We intentionally do not register a FileDecorationProvider to avoid extra badges
     // Semantic tokens to mark variables assigned from @html/@css
     const tokenTypes = ['function'];
     const tokenModifiers = ['declaration', 'html', 'css'];
