@@ -46,7 +46,8 @@
       "contentName": "source.css.embedded.mino",
       "patterns": [
         { "include": "#interpolation" },
-        { "include": "source.css" }
+        { "include": "source.css" },
+        { "include": "meta.property-list.css" }
       ]
     },
     "mino-arrow-html-return": {
@@ -80,7 +81,8 @@
       "contentName": "source.css.embedded.mino",
       "patterns": [
         { "include": "#interpolation" },
-        { "include": "source.css" }
+        { "include": "source.css" },
+        { "include": "meta.property-list.css" }
       ]
     },
     "mino-css-variable": {

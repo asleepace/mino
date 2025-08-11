@@ -9,8 +9,8 @@ export function activate(context: vscode.ExtensionContext) {
     const compiler = new MinoCompiler();
     const compileCommand = vscode.commands.registerCommand('mino.compileFile', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor || editor.document.languageId !== 'mino') {
-            vscode.window.showWarningMessage('Please open a .mino file to compile.');
+        if (!editor) {
+            vscode.window.showWarningMessage('Open a .mino or .jsxm file to compile.');
             return;
         }
         try {
@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
             const pathMod = require('path');
             const outDir = cfg.get<string>('mino.outputDirectory', './dist');
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri)?.uri.fsPath || process.cwd();
-            const fileBase = pathMod.basename(editor.document.fileName).replace(/\.mino$/, '');
+            const fileBase = pathMod.basename(editor.document.fileName).replace(/\.(mino|jsxm)$/i, '');
             const outFsPath = pathMod.resolve(workspaceFolder, outDir, `${fileBase}.js`);
             const outUri = vscode.Uri.file(outFsPath);
             const outDirUri = vscode.Uri.file(pathMod.dirname(outFsPath));
@@ -220,8 +220,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Auto-compile on save if enabled
     const onDidSave = vscode.workspace.onDidSaveTextDocument(async (document) => {
-        if (document.languageId !== 'mino') return;
+        const pathMod = require('path');
+        const ext = pathMod.extname(document.fileName).toLowerCase();
         const cfg = vscode.workspace.getConfiguration();
+        const watchExts = cfg.get<string[]>('mino.compileOnSaveExtensions', ['.mino', '.jsxm']).map(s => s.toLowerCase());
+        if (!watchExts.includes(ext)) return;
         const auto = cfg.get<boolean>('mino.autoCompile', true);
         if (!auto) return;
         try {
@@ -229,10 +232,9 @@ export function activate(context: vscode.ExtensionContext) {
             const emitFunctions = cfg.get<boolean>('mino.compiler.emitFunctions', false);
             const compiler = new MinoCompiler({ emitExports, emitFunctions });
             const compiled = await compiler.compile(document.getText(), document.fileName);
-            const pathMod = require('path');
             const outDir = cfg.get<string>('mino.outputDirectory', './dist');
             const root = vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || process.cwd();
-            const fileBase = pathMod.basename(document.fileName).replace(/\.mino$/, '');
+            const fileBase = pathMod.basename(document.fileName).replace(/\.(mino|jsxm)$/i, '');
             const outFsPath = pathMod.resolve(root, outDir, `${fileBase}.js`);
             const outUri = vscode.Uri.file(outFsPath);
             const outDirUri = vscode.Uri.file(pathMod.dirname(outFsPath));
@@ -336,6 +338,79 @@ export function activate(context: vscode.ExtensionContext) {
     // Refresh decorations once on activation
     minoDecorationEmitter.fire(undefined);
     context.subscriptions.push(decorationDisposable);
+
+    // Semantic tokens to mark variables assigned from @html/@css
+    const tokenTypes = ['function'];
+    const tokenModifiers = ['declaration', 'html', 'css'];
+    const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
+
+    const semanticProvider: vscode.DocumentSemanticTokensProvider = {
+        provideDocumentSemanticTokens(document: vscode.TextDocument): vscode.ProviderResult<vscode.SemanticTokens> {
+            const builder = new vscode.SemanticTokensBuilder(legend);
+            const text = document.getText();
+            const lines = text.split(/\r?\n/);
+            const htmlAssign = /\b(const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*@html\b/;
+            const cssAssign = /\b(const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*@css\b/;
+            for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+                const line = lines[lineIdx];
+                let m = htmlAssign.exec(line);
+                if (m) {
+                    const varName = m[2];
+                    const start = line.indexOf(varName);
+                    if (start >= 0) {
+                        const mods = (1 << 0) | (1 << 1); // declaration + html
+                        builder.push(lineIdx, start, varName.length, 0 /* function */, mods);
+                    }
+                }
+                m = cssAssign.exec(line);
+                if (m) {
+                    const varName = m[2];
+                    const start = line.indexOf(varName);
+                    if (start >= 0) {
+                        const mods = (1 << 0) | (1 << 2); // declaration + css
+                        builder.push(lineIdx, start, varName.length, 0 /* function */, mods);
+                    }
+                }
+            }
+            return builder.build();
+        }
+    };
+    // Apply to both 'mino' and 'javascript' so .mino and .jsxm get tags
+    context.subscriptions.push(
+        vscode.languages.registerDocumentSemanticTokensProvider({ language: 'mino' }, semanticProvider, legend),
+        vscode.languages.registerDocumentSemanticTokensProvider({ language: 'javascript' }, semanticProvider, legend)
+    );
+
+    // Simple formatter (2-space indent) for Mino and .jsxm JavaScript
+    const formatDoc = (document: vscode.TextDocument): vscode.TextEdit[] => {
+        const text = document.getText();
+        const lines = text.split(/\r?\n/);
+        let depth = 0;
+        const formatted: string[] = [];
+        for (let i = 0; i < lines.length; i++) {
+            const raw = lines[i].replace(/\s+$/g, '');
+            const trimmed = raw.trim();
+            // De-dent on leading closers
+            const leading = trimmed.match(/^[}\)]/);
+            if (leading) depth = Math.max(0, depth - 1);
+            const indent = '  '.repeat(depth);
+            formatted.push(trimmed ? indent + trimmed : '');
+            // Adjust depth after line for openers/closers
+            const opens = (trimmed.match(/[\{\(]/g) || []).length;
+            const closes = (trimmed.match(/[\}\)]/g) || []).length;
+            depth = Math.max(0, depth + opens - closes);
+        }
+        const fullRange = new vscode.Range(document.positionAt(0), document.positionAt(text.length));
+        return [vscode.TextEdit.replace(fullRange, formatted.join('\n'))];
+    };
+
+    const minoFormatter = vscode.languages.registerDocumentFormattingEditProvider({ language: 'mino' }, {
+        provideDocumentFormattingEdits: (document) => formatDoc(document)
+    });
+    const jsxmFormatter = vscode.languages.registerDocumentFormattingEditProvider({ language: 'javascript', pattern: '**/*.jsxm' }, {
+        provideDocumentFormattingEdits: (document) => formatDoc(document)
+    });
+    context.subscriptions.push(minoFormatter, jsxmFormatter);
 }
 
 export function deactivate() {

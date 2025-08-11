@@ -1,0 +1,52 @@
+const pageTitle = "JSXM"
+
+const renderMinoStyles = @css(color) {
+  :root {
+      --theme-color: var(${ color });
+  }
+  * {
+    border-sizing: box;
+    padding: 0;
+    margin: 0;
+  }
+  html,
+  body {
+    width: 100%;
+    min-height: 100vh;
+  }
+  main {
+    margin: 0 auto;
+    max-width: 768px;
+  }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .flex-1 { flex: 1; }
+}
+
+const renderDocumentHead = @html({ title, color, ...head }) {
+  <head>
+    <meta charset="UTF-8">
+    <title>${title}</title>
+    <style>${renderMinoStyles(color)}</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Brief description of your page">
+    <meta name="keywords" content="keyword1, keyword2, keyword3">
+    <meta name="author" content="Your Name">
+    ${...head}
+  </head>
+}
+
+const renderLayoutTemplate = @html({title, body, ...meta }) {
+  <html>
+    <head>{renderDocumentHead({ title, ...meta })}</head>
+    <body>
+      <main class="flex flex-col flex-1">
+        ${body}
+      </main>
+    </body>
+  </html>
+}
+
+export function render({title, body, meta}) {
+  return renderLayoutTemplate({title, body, meta})
+}
