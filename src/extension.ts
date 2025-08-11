@@ -338,6 +338,48 @@ export function activate(context: vscode.ExtensionContext) {
     // Refresh decorations once on activation
     minoDecorationEmitter.fire(undefined);
     context.subscriptions.push(decorationDisposable);
+
+    // Semantic tokens to mark variables assigned from @html/@css
+    const tokenTypes = ['function'];
+    const tokenModifiers = ['declaration', 'html', 'css'];
+    const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
+
+    const semanticProvider: vscode.DocumentSemanticTokensProvider = {
+        provideDocumentSemanticTokens(document: vscode.TextDocument): vscode.ProviderResult<vscode.SemanticTokens> {
+            const builder = new vscode.SemanticTokensBuilder(legend);
+            const text = document.getText();
+            const lines = text.split(/\r?\n/);
+            const htmlAssign = /\b(const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*@html\b/;
+            const cssAssign = /\b(const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*@css\b/;
+            for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+                const line = lines[lineIdx];
+                let m = htmlAssign.exec(line);
+                if (m) {
+                    const varName = m[2];
+                    const start = line.indexOf(varName);
+                    if (start >= 0) {
+                        const mods = (1 << 0) | (1 << 1); // declaration + html
+                        builder.push(lineIdx, start, varName.length, 0 /* function */, mods);
+                    }
+                }
+                m = cssAssign.exec(line);
+                if (m) {
+                    const varName = m[2];
+                    const start = line.indexOf(varName);
+                    if (start >= 0) {
+                        const mods = (1 << 0) | (1 << 2); // declaration + css
+                        builder.push(lineIdx, start, varName.length, 0 /* function */, mods);
+                    }
+                }
+            }
+            return builder.build();
+        }
+    };
+    // Apply to both 'mino' and 'javascript' so .mino and .jsxm get tags
+    context.subscriptions.push(
+        vscode.languages.registerDocumentSemanticTokensProvider({ language: 'mino' }, semanticProvider, legend),
+        vscode.languages.registerDocumentSemanticTokensProvider({ language: 'javascript' }, semanticProvider, legend)
+    );
 }
 
 export function deactivate() {

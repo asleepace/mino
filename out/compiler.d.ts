@@ -15,5 +15,8 @@ export declare class MinoCompiler {
     private extractRootIdentifier;
     private skipInterpolation;
     private trimOuterWhitespace;
+    private buildJsDocForAssignment;
+    private readBalancedParens;
+    private convertJsxBracesToTemplate;
 }
 //# sourceMappingURL=compiler.d.ts.map

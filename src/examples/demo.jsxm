@@ -1,14 +1,8 @@
-
-
-
-
-
 const pageTitle = "JSXM"
 
-const styleSheet = @css {
+const renderMinoStyles = @css(color) {
     :root {
-        display: flex;
-        background-color: red;
+        --theme-color: var(${ color });
     }
     * {
         border-sizing: box;
@@ -29,29 +23,32 @@ const styleSheet = @css {
     .flex-1 { flex: 1; }
 }
 
-const documentHead = @html {
+const renderDocumentHead = @html({ title, color, ...head }) {
     <head>
         <meta charset="UTF-8">
-        <title>${page_title}</title>
-        <style>${style_sheet}</style>
+        <title>${title}</title>
+        <style>${renderMinoStyles(color)}</style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="Brief description of your page">
         <meta name="keywords" content="keyword1, keyword2, keyword3">
         <meta name="author" content="Your Name">
+        ${...head}
     </head>
 }
 
-const documentBody = @html(children) {
-    <main class="flex flex-col flex-1">
-        ${children}
-    </main>
-}
-
-const template = @html(children) (
+const renderLayoutTemplate = @html({ title, body, meta }) (
     <html>
-        <head>{documentHead}</head>
-        <body>{children}</body>
+        <head>{renderDocumentHead({ title, ...meta })}</head>
+        <body>
+            <main class="flex flex-col flex-1">
+                ${body}
+            </main>
+        </body>
     </html>
 )
 
-export { template }
+
+
+export function render({ title, body, meta }) {
+    return renderLayoutTemplate({ title, body, meta })
+}

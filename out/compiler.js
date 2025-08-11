@@ -38,8 +38,9 @@ class MinoCompiler {
     transformSource(source) {
         let output = '';
         let index = 0;
-        const assignmentRegex = /\b(?:(export)\s+)?(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*@(css|html)\s*(?:\(([^)]*)\)\s*)?\{/g;
-        const bareRegex = /@(css|html)\s*(?:\(([^)]*)\)\s*)?\{/g;
+        let usedFlattenHelper = false;
+        const assignmentRegex = /\b(?:(export)\s+)?(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*@(css|html)\s*(?:\(([^)]*)\)\s*)?(\{|\()/g;
+        const bareRegex = /@(css|html)\s*(?:\(([^)]*)\)\s*)?(\{|\()/g;
         while (index < source.length) {
             // Find the next block (assignment or bare)
             assignmentRegex.lastIndex = index;
@@ -75,13 +76,28 @@ class MinoCompiler {
             // Emit code up to the match
             output += source.slice(index, nextMatch.index);
             // Find block content by matching braces
-            const openBracePos = source.indexOf('{', nextMatch.index);
-            if (openBracePos < 0) {
+            // Find the block opening brace that this regex matched (not parameter braces)
+            const matchedText = nextMatch[0];
+            // Prefer the delimiter actually captured by the regex (group 6 for assignment, group 3 for bare)
+            const openDelim = isAssignment ? nextMatch[6] : nextMatch[3];
+            let openTokenIndex = -1;
+            if (openDelim === '{' || openDelim === '(') {
+                openTokenIndex = matchedText.lastIndexOf(openDelim);
+            }
+            else {
+                // Fallback: choose the rightmost of '{' or '('
+                const idxBrace = matchedText.lastIndexOf('{');
+                const idxParen = matchedText.lastIndexOf('(');
+                openTokenIndex = Math.max(idxBrace, idxParen);
+            }
+            const openPos = openTokenIndex >= 0 ? (nextMatch.index + openTokenIndex) : -1;
+            if (openPos < 0) {
                 // Malformed; just emit the rest and stop
                 output += source.slice(nextMatch.index);
                 break;
             }
-            const { content, endIndex } = this.readBalancedBraces(source, openBracePos);
+            const openChar = source[openPos];
+            const { content, endIndex } = openChar === '{' ? this.readBalancedBraces(source, openPos) : this.readBalancedParens(source, openPos);
             if (endIndex < 0) {
                 // Unbalanced; emit as-is
                 output += source.slice(nextMatch.index);
@@ -91,28 +107,58 @@ class MinoCompiler {
                 const [, exportKw, decl, varName, blockType, explicitParams] = nextMatch;
                 const params = this.detectParams(content);
                 const paramList = Array.from(params).join(', ');
-                const body = this.trimOuterWhitespace(content);
+                let body = this.trimOuterWhitespace(content);
+                // JSX-like braces to template interpolation for HTML blocks
+                if (blockType === 'html') {
+                    body = this.convertJsxBracesToTemplate(body);
+                }
+                // Auto-spread arrays: ${...expr} → ${__mino_flat(expr)}
+                if (/\$\{\s*\.\.\./.test(body)) {
+                    usedFlattenHelper = true;
+                    body = body.replace(/\$\{\s*\.\.\.([\s\S]*?)\}/g, (_m, expr) => `\${${'__mino_flat'}(${expr.trim()})}`);
+                }
+                // Positional args: $0, $1 triggers function with (...args)
+                const positionalMatches = Array.from(body.matchAll(/\$(\d+)/g));
+                const hasPositional = positionalMatches.length > 0;
                 const exportPrefix = (this.emitExports || !!exportKw) ? 'export ' : '';
+                const isHtml = blockType === 'html';
+                const jsDocHeader = this.buildJsDocForAssignment(varName, isHtml, explicitParams, hasPositional || this.emitFunctions || (!!explicitParams && explicitParams.trim().length > 0), params);
                 if (explicitParams && explicitParams.trim().length > 0) {
-                    const compiled = `${exportPrefix}const ${varName} = (${explicitParams.trim()}) => \`${body}\`;`;
+                    // Allow explicit params; keep as arrow with those params
+                    const compiled = `${jsDocHeader}${exportPrefix}const ${varName} = (${explicitParams.trim()}) => \`${body}\`;`;
                     output += compiled;
                 }
-                else if (this.emitFunctions) {
-                    const compiled = `${exportPrefix}const ${varName} = (${paramList}) => \`${body}\`;`;
+                else if (hasPositional || this.emitFunctions) {
+                    // Use rest args and replace $n with args[n]
+                    body = body.replace(/\$(\d+)/g, (_m, d) => `\${${'args'}[${Number(d)}] ?? ''}`);
+                    const compiled = `${jsDocHeader}${exportPrefix}const ${varName} = (...args) => \`${body}\`;`;
                     output += compiled;
                 }
                 else {
-                    const compiled = `${exportPrefix}const ${varName} = \`${body}\`;`;
+                    const compiled = `${jsDocHeader}${exportPrefix}const ${varName} = \`${body}\`;`;
                     output += compiled;
                 }
             }
             else {
                 // Bare block anywhere → compile to template literal so it works in expression context
-                const body = this.trimOuterWhitespace(content);
+                let body = this.trimOuterWhitespace(content);
+                const isHtmlBare = nextMatch[1] === 'html';
+                if (isHtmlBare) {
+                    body = this.convertJsxBracesToTemplate(body);
+                }
+                if (/\$\{\s*\.\.\./.test(body)) {
+                    usedFlattenHelper = true;
+                    body = body.replace(/\$\{\s*\.\.\.([\s\S]*?)\}/g, (_m, expr) => `\${${'__mino_flat'}(${expr.trim()})}`);
+                }
                 const compiled = `\`${body}\``;
                 output += compiled;
             }
             index = endIndex + 1;
+        }
+        // Prepend helper if used
+        if (usedFlattenHelper) {
+            const helper = `function __mino_flat(v){return Array.isArray(v)?v.join(''): (v ?? '')}`;
+            output = helper + '\n' + output;
         }
         return output;
     }
@@ -220,6 +266,77 @@ class MinoCompiler {
     }
     trimOuterWhitespace(s) {
         return s.trim();
+    }
+    buildJsDocForAssignment(name, isHtml, explicitParams, isFunction, inferredParams) {
+        const lines = [];
+        lines.push('/**');
+        lines.push(` * ${isHtml ? 'HTML' : 'CSS'} template ${isFunction ? 'function' : 'string'} generated by Mino`);
+        if (explicitParams && explicitParams.trim()) {
+            const raw = explicitParams.trim();
+            // Split top-level params by comma (ignore commas inside braces)
+            const parts = [];
+            let buf = '';
+            let depth = 0;
+            for (let i = 0; i < raw.length; i++) {
+                const ch = raw[i];
+                if (ch === '{' || ch === '[')
+                    depth++;
+                if (ch === '}' || ch === ']')
+                    depth--;
+                if (ch === ',' && depth === 0) {
+                    parts.push(buf.trim());
+                    buf = '';
+                    continue;
+                }
+                buf += ch;
+            }
+            if (buf.trim())
+                parts.push(buf.trim());
+            parts.forEach((p, idx) => {
+                const token = p.trim();
+                if (!token)
+                    return;
+                if (token.startsWith('{') || token.startsWith('[')) {
+                    const name = parts.length === 1 ? 'params' : `arg${idx}`;
+                    lines.push(` * @param {object} ${name}`);
+                }
+                else {
+                    // Strip default initializer
+                    const name = token.split('=')[0].trim();
+                    lines.push(` * @param ${name}`);
+                }
+            });
+        }
+        else if (isFunction && inferredParams && inferredParams.size > 0) {
+            lines.push(' * @param {...any} args Positional parameters used as $0, $1, ...');
+        }
+        lines.push(' * @returns {string}');
+        lines.push(' */\n');
+        return lines.join('\n');
+    }
+    readBalancedParens(text, openParenIndex) {
+        let depth = 0;
+        for (let i = openParenIndex; i < text.length; i++) {
+            const ch = text[i];
+            if (ch === '$' && text[i + 1] === '{') {
+                i = this.skipInterpolation(text, i + 1);
+                continue;
+            }
+            if (ch === '(')
+                depth++;
+            else if (ch === ')') {
+                depth--;
+                if (depth === 0)
+                    return { content: text.slice(openParenIndex + 1, i), endIndex: i };
+            }
+            if (ch === '"' || ch === '\'' || ch === '`')
+                i = this.skipQuoted(text, i);
+        }
+        return { content: '', endIndex: -1 };
+    }
+    convertJsxBracesToTemplate(body) {
+        // Replace occurrences of {...} that are not ${...} into ${...}
+        return body.replace(/\{(?!\$)\s*([\s\S]*?)\s*\}/g, (_m, expr) => '${' + expr + '}');
     }
 }
 exports.MinoCompiler = MinoCompiler;
