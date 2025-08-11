@@ -49,7 +49,7 @@ export const renderDocumentHead = ({ title, color, ...head }) => `<head>
  * @param {object} params
  * @returns {string}
  */
-export const renderLayoutTemplate = ({title, body, ...meta }) => `<html>
+export const renderLayoutTemplate = ({ title, body, ...meta }) => `<html>
     <head>${renderDocumentHead({ title, ...meta})}</head>
     <body>
       <main class="flex flex-col flex-1">

@@ -2,7 +2,7 @@
   "name": "mino-lang",
   "displayName": "Mino Language Support",
   "description": "Syntax highlighting for JS with embedded HTML and CSS",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "publisher": "asleepace",
   "icon": "icons/mino.png",
   "engines": {
@@ -72,8 +72,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "dark": "./icons/mino-dark.svg",
-          "light": "./icons/mino-light.svg"
+          "dark": "./icons/mino-dark.png",
+          "light": "./icons/mino-light.png"
         }
       },
       {
@@ -130,8 +130,8 @@
   ],
   "main": "./out/extension.js",
   "scripts": {
-    "vscode:prepublish": "npm run build:assets && npm run compile",
-    "build:assets": "node scripts/generate-icon.js",
+    "vscode:prepublish": "npm run compile",
+    "build": "bash ./build.sh",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package": "vsce package",
