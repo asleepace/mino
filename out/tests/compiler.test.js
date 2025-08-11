@@ -4,17 +4,15 @@ const node_test_1 = require("node:test");
 const node_assert_1 = require("node:assert");
 const compiler_1 = require("../compiler");
 const compile = async (src, name = 'test.mino') => new compiler_1.MinoCompiler({ emitExports: true }).compile(src, name);
-(0, node_test_1.test)('compiles html assignment with param detection', async () => {
-    const src = `const tpl = @html { <div>${'${user.name}'}</div> }`;
+(0, node_test_1.test)('assignment without params compiles to template string (captures outer vars)', async () => {
+    const src = `const userId = 1;\nconst tpl = @html { <div>${'${userId}'}</div> }`;
     const out = await compile(src);
-    node_assert_1.strict.match(out, /const tpl = \(user\) =>/);
-    node_assert_1.strict.match(out, />\$\{user\.name\}</);
+    node_assert_1.strict.match(out, /export const tpl = `.*<div>\$\{userId\}<\/div>.*`;/s);
 });
-(0, node_test_1.test)('compiles css assignment', async () => {
+(0, node_test_1.test)('compiles css assignment to template string by default', async () => {
     const src = `const css = @css { .a { color: red; } }`;
     const out = await compile(src);
-    node_assert_1.strict.match(out, /export const css = \(\) =>/);
-    node_assert_1.strict.match(out, /\.a \{ color: red; \}/);
+    node_assert_1.strict.match(out, /export const css = `.*\.a \{ color: red; \}.*`;/s);
 });
 (0, node_test_1.test)('handles bare blocks as inert', async () => {
     const src = `@html { <br/> }\nconst after = 1;`;
@@ -25,6 +23,11 @@ const compile = async (src, name = 'test.mino') => new compiler_1.MinoCompiler({
 (0, node_test_1.test)('trims template contents', async () => {
     const src = `const t = @html {\n  <p> hi </p>\n}\n`;
     const out = await compile(src);
-    node_assert_1.strict.match(out, /export const t = \(\) => `<p> hi <\/p>`;/);
+    node_assert_1.strict.match(out, /export const t = `<p> hi <\/p>`;/);
+});
+(0, node_test_1.test)('shorthand parameters: const f = @html(x, y) { ... } emits a function', async () => {
+    const src = `const f = @html(x, y) { <p>${'${x + y}'}</p> }`;
+    const out = await compile(src);
+    node_assert_1.strict.match(out, /export const f = \(x, y\) => `<p>\$\{x \+ y\}<\/p>`;/);
 });
 //# sourceMappingURL=compiler.test.js.map

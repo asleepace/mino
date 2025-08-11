@@ -2,9 +2,11 @@ import * as path from 'path';
 
 export class MinoCompiler {
   private readonly emitExports: boolean;
+  private readonly emitFunctions: boolean;
 
-  constructor(options?: { emitExports?: boolean }) {
+  constructor(options?: { emitExports?: boolean; emitFunctions?: boolean }) {
     this.emitExports = options?.emitExports ?? true;
+    this.emitFunctions = options?.emitFunctions ?? false;
   }
 
   async compile(source: string, fileName: string): Promise<string> {
@@ -17,8 +19,8 @@ export class MinoCompiler {
     let output = '';
     let index = 0;
 
-    const assignmentRegex = /\b(?:(export)\s+)?(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*@(css|html)\s*\{/g;
-    const bareRegex = /@(css|html)\s*\{/g;
+    const assignmentRegex = /\b(?:(export)\s+)?(const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*@(css|html)\s*(?:\(([^)]*)\)\s*)?\{/g;
+    const bareRegex = /@(css|html)\s*(?:\(([^)]*)\)\s*)?\{/g;
 
     while (index < source.length) {
       // Find the next block (assignment or bare)
@@ -65,17 +67,25 @@ export class MinoCompiler {
       }
 
       if (isAssignment) {
-        const [, exportKw, decl, varName, blockType] = nextMatch as unknown as [string, string | undefined, string, string, string];
+        const [, exportKw, decl, varName, blockType, explicitParams] = nextMatch as unknown as [string, string | undefined, string, string, string, string?];
         const params = this.detectParams(content);
         const paramList = Array.from(params).join(', ');
         const body = this.trimOuterWhitespace(content);
         const exportPrefix = (this.emitExports || !!exportKw) ? 'export ' : '';
-        const compiled = `${exportPrefix}const ${varName} = (${paramList}) => \`${body}\`;`;
-        output += compiled;
+        if (explicitParams && explicitParams.trim().length > 0) {
+          const compiled = `${exportPrefix}const ${varName} = (${explicitParams.trim()}) => \`${body}\`;`;
+          output += compiled;
+        } else if (this.emitFunctions) {
+          const compiled = `${exportPrefix}const ${varName} = (${paramList}) => \`${body}\`;`;
+          output += compiled;
+        } else {
+          const compiled = `${exportPrefix}const ${varName} = \`${body}\`;`;
+          output += compiled;
+        }
       } else {
-        // Bare block → compile to inert expression so output stays valid JS
+        // Bare block anywhere → compile to template literal so it works in expression context
         const body = this.trimOuterWhitespace(content);
-        const compiled = `void \`${body}\`;`;
+        const compiled = `\`${body}\``;
         output += compiled;
       }
 

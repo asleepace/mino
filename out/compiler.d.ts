@@ -1,7 +1,9 @@
 export declare class MinoCompiler {
     private readonly emitExports;
+    private readonly emitFunctions;
     constructor(options?: {
         emitExports?: boolean;
+        emitFunctions?: boolean;
     });
     compile(source: string, fileName: string): Promise<string>;
     private transformSource;

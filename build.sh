@@ -9,4 +9,5 @@ npm run compile
 npx @vscode/vsce package
 
 # 3. Test the packaged extension
+cursor --install-extension mino-lang-*.vsix
 code --install-extension mino-lang-*.vsix

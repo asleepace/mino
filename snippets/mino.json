@@ -17,6 +17,24 @@
     ],
     "description": "Create an HTML block assignment"
   },
+  "HTML Arrow (return block)": {
+    "prefix": ["html-arrow", "@html->"],
+    "body": [
+      "const ${1:render} = (${2:arg}) => @html {",
+      "  ${3:<div>${${2:arg}}</div>}",
+      "}"
+    ],
+    "description": "Arrow function that returns an @html block"
+  },
+  "CSS Arrow (return block)": {
+    "prefix": ["css-arrow", "@css->"],
+    "body": [
+      "const ${1:styleFn} = (${2:arg}) => @css {",
+      "  ${3:.cls { color: ${${2:arg}}; }}",
+      "}"
+    ],
+    "description": "Arrow function that returns an @css block"
+  },
   "Button Component": {
     "prefix": "btn-component",
     "body": [

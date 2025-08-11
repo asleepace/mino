@@ -2,7 +2,7 @@
   "name": "mino-lang",
   "displayName": "Mino Language Support",
   "description": "Syntax highlighting for Mino language with embedded HTML and CSS",
-  "version": "1.1.4",
+  "version": "1.1.8",
   "publisher": "asleepace",
   "icon": "icons/mino.png",
   "engines": {
@@ -36,6 +36,16 @@
           "type": "boolean",
           "default": true,
           "description": "Show a notification when compilation completes or fails"
+        },
+        "mino.compiler.emitExports": {
+          "type": "boolean",
+          "default": true,
+          "description": "Emit ESM named exports for compiled symbols"
+        },
+        "mino.compiler.emitFunctions": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, compile assignment blocks to functions with inferred params; otherwise emit template strings"
         }
       }
     },

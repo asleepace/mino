@@ -38,10 +38,13 @@ function activate(context) {
             return;
         }
         try {
+            const cfg = vscode.workspace.getConfiguration();
+            const emitExports = cfg.get('mino.compiler.emitExports', true);
+            const emitFunctions = cfg.get('mino.compiler.emitFunctions', false);
+            const compiler = new compiler_1.MinoCompiler({ emitExports, emitFunctions });
             const src = editor.document.getText();
             const compiled = await compiler.compile(src, editor.document.fileName);
             const pathMod = require('path');
-            const cfg = vscode.workspace.getConfiguration();
             const outDir = cfg.get('mino.outputDirectory', './dist');
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri)?.uri.fsPath || process.cwd();
             const fileBase = pathMod.basename(editor.document.fileName).replace(/\.mino$/, '');
@@ -139,14 +142,14 @@ function activate(context) {
             const diagnostic = new vscode.Diagnostic(new vscode.Range(startPos, endPos), 'Variable names must be valid JavaScript identifiers (start with letter, $, or _)', vscode.DiagnosticSeverity.Error);
             diagnostics.push(diagnostic);
         }
-        // Check for invalid @css/@html usage: allow bare blocks and assignment blocks
-        const invalidBlockPattern = /@(css|html)(?!\s*\{|\s*[a-zA-Z])/g;
+        // Check for invalid @css/@html usage: allow bare blocks, shorthand params, and assignment blocks
+        const invalidBlockPattern = /@(css|html)(?!\s*(\{|\(|[a-zA-Z]))/g;
         let invalidMatch2;
         while ((invalidMatch2 = invalidBlockPattern.exec(text)) !== null) {
             // If not followed by '{' or an identifier, flag usage
             const startPos = document.positionAt(invalidMatch2.index);
             const endPos = document.positionAt(invalidMatch2.index + invalidMatch2[0].length);
-            const diagnostic = new vscode.Diagnostic(new vscode.Range(startPos, endPos), `@${invalidMatch2[1]} must be followed by '{' or used in variable assignment`, vscode.DiagnosticSeverity.Error);
+            const diagnostic = new vscode.Diagnostic(new vscode.Range(startPos, endPos), `@${invalidMatch2[1]} must be followed by '{' or '(...) {' or used in variable assignment`, vscode.DiagnosticSeverity.Error);
             diagnostics.push(diagnostic);
         }
         // Check for nested variable-declared blocks (not allowed). Bare blocks could appear inside JS blocks; keep rule for assignments only.
@@ -197,6 +200,9 @@ function activate(context) {
         if (!auto)
             return;
         try {
+            const emitExports = cfg.get('mino.compiler.emitExports', true);
+            const emitFunctions = cfg.get('mino.compiler.emitFunctions', false);
+            const compiler = new compiler_1.MinoCompiler({ emitExports, emitFunctions });
             const compiled = await compiler.compile(document.getText(), document.fileName);
             const pathMod = require('path');
             const outDir = cfg.get('mino.outputDirectory', './dist');

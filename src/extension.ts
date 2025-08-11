@@ -14,10 +14,13 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
         try {
+            const cfg = vscode.workspace.getConfiguration();
+            const emitExports = cfg.get<boolean>('mino.compiler.emitExports', true);
+            const emitFunctions = cfg.get<boolean>('mino.compiler.emitFunctions', false);
+            const compiler = new MinoCompiler({ emitExports, emitFunctions });
             const src = editor.document.getText();
             const compiled = await compiler.compile(src, editor.document.fileName);
             const pathMod = require('path');
-            const cfg = vscode.workspace.getConfiguration();
             const outDir = cfg.get<string>('mino.outputDirectory', './dist');
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri)?.uri.fsPath || process.cwd();
             const fileBase = pathMod.basename(editor.document.fileName).replace(/\.mino$/, '');
@@ -146,8 +149,8 @@ export function activate(context: vscode.ExtensionContext) {
             diagnostics.push(diagnostic);
         }
         
-        // Check for invalid @css/@html usage: allow bare blocks and assignment blocks
-        const invalidBlockPattern = /@(css|html)(?!\s*\{|\s*[a-zA-Z])/g;
+        // Check for invalid @css/@html usage: allow bare blocks, shorthand params, and assignment blocks
+        const invalidBlockPattern = /@(css|html)(?!\s*(\{|\(|[a-zA-Z]))/g;
         let invalidMatch2;
         while ((invalidMatch2 = invalidBlockPattern.exec(text)) !== null) {
             // If not followed by '{' or an identifier, flag usage
@@ -156,7 +159,7 @@ export function activate(context: vscode.ExtensionContext) {
                 
                 const diagnostic = new vscode.Diagnostic(
                     new vscode.Range(startPos, endPos),
-                    `@${invalidMatch2[1]} must be followed by '{' or used in variable assignment`,
+                    `@${invalidMatch2[1]} must be followed by '{' or '(...) {' or used in variable assignment`,
                     vscode.DiagnosticSeverity.Error
                 );
                 diagnostics.push(diagnostic);
@@ -222,6 +225,9 @@ export function activate(context: vscode.ExtensionContext) {
         const auto = cfg.get<boolean>('mino.autoCompile', true);
         if (!auto) return;
         try {
+            const emitExports = cfg.get<boolean>('mino.compiler.emitExports', true);
+            const emitFunctions = cfg.get<boolean>('mino.compiler.emitFunctions', false);
+            const compiler = new MinoCompiler({ emitExports, emitFunctions });
             const compiled = await compiler.compile(document.getText(), document.fileName);
             const pathMod = require('path');
             const outDir = cfg.get<string>('mino.outputDirectory', './dist');

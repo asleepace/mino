@@ -4,31 +4,93 @@
   "scopeName": "source.mino",
   "fileTypes": ["mino"],
   "patterns": [
-    {
-      "include": "#mino-css-variable"
-    },
-    {
-      "include": "#mino-html-variable"
-    },
-    {
-      "include": "#mino-css-block"
-    },
-    {
-      "include": "#mino-html-block"
-    },
-    {
-      "include": "source.js"
-    }
+    { "include": "#mino-forced-html" },
+    { "include": "#mino-forced-css" },
+    { "include": "#mino-html-block" },
+    { "include": "#mino-css-block" },
+    { "include": "#mino-arrow-html-return" },
+    { "include": "#mino-arrow-css-return" },
+    { "include": "#mino-css-variable" },
+    { "include": "#mino-html-variable" },
+    { "include": "source.js" }
   ],
   "repository": {
+    "mino-forced-html": {
+      "begin": "(^|=>|=|return|,|;|\\(|\\[|\\{|\\n|\\r)\\s*(@html)\\s*(\\{)",
+      "beginCaptures": {
+        "2": { "name": "keyword.control.mino" },
+        "3": { "name": "punctuation.definition.block.begin.mino" }
+      },
+      "end": "\\}",
+      "applyEndPatternLast": true,
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.block.end.mino" }
+      },
+      "contentName": "text.html.embedded.mino",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "text.html.basic" }
+      ]
+    },
+    "mino-forced-css": {
+      "begin": "(^|=>|=|return|,|;|\\(|\\[|\\{|\\n|\\r)\\s*(@css)\\s*(\\{)",
+      "beginCaptures": {
+        "2": { "name": "keyword.control.mino" },
+        "3": { "name": "punctuation.definition.block.begin.mino" }
+      },
+      "end": "\\}",
+      "applyEndPatternLast": true,
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.block.end.mino" }
+      },
+      "contentName": "source.css.embedded.mino",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "source.css" }
+      ]
+    },
+    "mino-arrow-html-return": {
+      "begin": "=>\\s*(?:\\n|\\r|\\r\\n|\\s)*(@html)\\s*(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.mino" },
+        "2": { "name": "punctuation.definition.block.begin.mino" }
+      },
+      "end": "\\}",
+      "applyEndPatternLast": true,
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.block.end.mino" }
+      },
+      "contentName": "text.html.embedded.mino",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "text.html.basic" }
+      ]
+    },
+    "mino-arrow-css-return": {
+      "begin": "=>\\s*(?:\\n|\\r|\\r\\n|\\s)*(@css)\\s*(\\{)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.mino" },
+        "2": { "name": "punctuation.definition.block.begin.mino" }
+      },
+      "end": "\\}",
+      "applyEndPatternLast": true,
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.block.end.mino" }
+      },
+      "contentName": "source.css.embedded.mino",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "source.css" }
+      ]
+    },
     "mino-css-variable": {
-      "begin": "\\b(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*(=)\\s*(@css)\\s*(\\{)",
+      "begin": "\\b(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*(=)\\s*(@css)\\s*(?:\\(([^)]*)\\)\\s*)?(\\{)",
       "beginCaptures": {
         "1": { "name": "storage.type.js" },
         "2": { "name": "variable.other.readwrite.js" },
         "3": { "name": "keyword.operator.assignment.js" },
         "4": { "name": "keyword.control.mino" },
-        "5": { "name": "punctuation.definition.block.begin.mino" }
+        "6": { "name": "punctuation.definition.block.begin.mino" }
       },
       "end": "\\}",
       "applyEndPatternLast": true,
@@ -80,13 +142,13 @@
       ]
     },
     "mino-html-variable": {
-      "begin": "\\b(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*(=)\\s*(@html)\\s*(\\{)",
+      "begin": "\\b(const|let|var)\\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\\s*(=)\\s*(@html)\\s*(?:\\(([^)]*)\\)\\s*)?(\\{)",
       "beginCaptures": {
         "1": { "name": "storage.type.js" },
         "2": { "name": "variable.other.readwrite.js" },
         "3": { "name": "keyword.operator.assignment.js" },
         "4": { "name": "keyword.control.mino" },
-        "5": { "name": "punctuation.definition.block.begin.mino" }
+        "6": { "name": "punctuation.definition.block.begin.mino" }
       },
       "end": "\\}",
       "applyEndPatternLast": true,
