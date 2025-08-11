@@ -9,8 +9,8 @@ export function activate(context: vscode.ExtensionContext) {
     const compiler = new MinoCompiler();
     const compileCommand = vscode.commands.registerCommand('mino.compileFile', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor || editor.document.languageId !== 'mino') {
-            vscode.window.showWarningMessage('Please open a .mino file to compile.');
+        if (!editor) {
+            vscode.window.showWarningMessage('Open a .mino or .jsxm file to compile.');
             return;
         }
         try {
@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
             const pathMod = require('path');
             const outDir = cfg.get<string>('mino.outputDirectory', './dist');
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri)?.uri.fsPath || process.cwd();
-            const fileBase = pathMod.basename(editor.document.fileName).replace(/\.mino$/, '');
+            const fileBase = pathMod.basename(editor.document.fileName).replace(/\.(mino|jsxm)$/i, '');
             const outFsPath = pathMod.resolve(workspaceFolder, outDir, `${fileBase}.js`);
             const outUri = vscode.Uri.file(outFsPath);
             const outDirUri = vscode.Uri.file(pathMod.dirname(outFsPath));
@@ -220,8 +220,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Auto-compile on save if enabled
     const onDidSave = vscode.workspace.onDidSaveTextDocument(async (document) => {
-        if (document.languageId !== 'mino') return;
+        const pathMod = require('path');
+        const ext = pathMod.extname(document.fileName).toLowerCase();
         const cfg = vscode.workspace.getConfiguration();
+        const watchExts = cfg.get<string[]>('mino.compileOnSaveExtensions', ['.mino', '.jsxm']).map(s => s.toLowerCase());
+        if (!watchExts.includes(ext)) return;
         const auto = cfg.get<boolean>('mino.autoCompile', true);
         if (!auto) return;
         try {
@@ -229,10 +232,9 @@ export function activate(context: vscode.ExtensionContext) {
             const emitFunctions = cfg.get<boolean>('mino.compiler.emitFunctions', false);
             const compiler = new MinoCompiler({ emitExports, emitFunctions });
             const compiled = await compiler.compile(document.getText(), document.fileName);
-            const pathMod = require('path');
             const outDir = cfg.get<string>('mino.outputDirectory', './dist');
             const root = vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath || process.cwd();
-            const fileBase = pathMod.basename(document.fileName).replace(/\.mino$/, '');
+            const fileBase = pathMod.basename(document.fileName).replace(/\.(mino|jsxm)$/i, '');
             const outFsPath = pathMod.resolve(root, outDir, `${fileBase}.js`);
             const outUri = vscode.Uri.file(outFsPath);
             const outDirUri = vscode.Uri.file(pathMod.dirname(outFsPath));

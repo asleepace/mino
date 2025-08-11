@@ -12,9 +12,11 @@
   "typescript.tsc.autoDetect": "off",
   "typescript.preferences.includePackageJsonAutoImports": "auto",
   "typescript.suggest.autoImports": true,
-  
+  "javascript.validate.enable": false,
   "files.associations": {
-    "*.mino": "mino"
+    "*.mino": "mino",
+    "*.jsxm": "javascript",
+    
   },
   "[mino]": {
     "editor.insertSpaces": true,
@@ -26,6 +28,8 @@
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.indentation": true,
     "editor.renderWhitespace": "boundary",
-    "editor.semanticHighlighting.enabled": true
+    "editor.semanticHighlighting.enabled": true,
+    "mino.autoCompile": true,
+    "mino.compileOnSaveExtensions": [".mino", ".jsxm"]
   }
 }
