@@ -35,13 +35,13 @@ export const renderMinoStyles = (color) => `:root {
  */
 export const renderDocumentHead = ({ title, color, ...head }) => `<head>
     <meta charset="UTF-8">
-    <title>$${title}</title>
-    <style>$${renderMinoStyles(color)}</style>
+    <title>${title}</title>
+    <style>${renderMinoStyles(color)}</style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Brief description of your page">
     <meta name="keywords" content="keyword1, keyword2, keyword3">
     <meta name="author" content="Your Name">
-    $${__mino_flat(head)}
+    ${__mino_flat(head)}
   </head>`;
 
 /**
@@ -50,10 +50,10 @@ export const renderDocumentHead = ({ title, color, ...head }) => `<head>
  * @returns {string}
  */
 export const renderLayoutTemplate = ({ title, body, ...meta }) => `<html>
-    <head>${renderDocumentHead({ title, ...meta})}</head>
+    <head>${renderDocumentHead({ title, ...meta })}</head>
     <body>
       <main class="flex flex-col flex-1">
-        $${body}
+        ${body}
       </main>
     </body>
   </html>`;

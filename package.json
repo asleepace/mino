@@ -1,6 +1,6 @@
 {
   "name": "mino-lang",
-  "displayName": "Mino Language Support",
+  "displayName": "Mino: Inline HTML/CSS in JavaScript",
   "description": "Syntax highlighting for JS with embedded HTML and CSS",
   "version": "1.2.3",
   "publisher": "asleepace",

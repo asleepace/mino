@@ -41,7 +41,7 @@ const renderDocumentHead = @html({ title, color, ...head }) {
     </head>
 }
 
-const renderLayoutTemplate = @html({ title, body, meta }) (
+const renderLayoutTemplate = @html({ title, body, meta }) {
     <html>
         <head>{renderDocumentHead({ title, ...meta })}</head>
         <body>
@@ -50,7 +50,7 @@ const renderLayoutTemplate = @html({ title, body, meta }) (
             </main>
         </body>
     </html>
-)
+}
 
 
 

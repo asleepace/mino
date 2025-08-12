@@ -2,7 +2,7 @@
 
 // declare html fragments as variables!
 const view = @html {
-  <div class="greet">Welcome to mino!</div>
+  <div class="greet">Welcome to Mino!</div>
 }
 
 // declare css styles as variables!
@@ -12,10 +12,11 @@ const greetingStyle = @css {
 
 // dynamically interpolate values!
 
+// positional args shorthand ($0, $1, ...)
 const test1 = @html { <p>$0</p> }
 
 const greeting = @html(message) {
-  <style>${greetingStyle()}</style>
+  <style>${greetingStyle}</style>
   <p class="greet">${message}</p>
 }
 
@@ -28,26 +29,20 @@ const pageStyles = @css {
   }
 }
 
-const styleshet = @html {
-  ${pageStyles()}
-  ${greetingStyles()}
+// compose styles into a single <style> block
+const stylesheet = @html {
+  ${pageStyles}
+  ${greetingStyle}
 }
 
-const container = @html {
-  <style>${styleshet()}</style>
+const container = @html(content) {
+  <style>${stylesheet}</style>
   <main>${content}</main>
 }
 
-function render() {
-  return container(
-    greeting(message)
-  )
+function render(message) {
+  return container(greeting(message))
 }
 
-/**
- * @param example 
- */
-const myVar = 123;
-
-export { view, styles, greet };
+export { view, greetingStyle, greeting, container, render };
 

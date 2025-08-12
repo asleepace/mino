@@ -115,7 +115,7 @@ class MinoCompiler {
                 // Auto-spread arrays: ${...expr} → ${__mino_flat(expr)}
                 if (/\$\{\s*\.\.\./.test(body)) {
                     usedFlattenHelper = true;
-                    body = body.replace(/\$\{\s*\.\.\.([\s\S]*?)\}/g, (_m, expr) => `\${${'__mino_flat'}(${expr.trim()})}`);
+                    body = body.replace(/\$\{\s*\.\.\.([\s\S]*?)\}/g, (_m, expr) => '${' + '__mino_flat' + '(' + expr.trim() + ')}');
                 }
                 // Positional args: $0, $1 triggers function with (...args)
                 const positionalMatches = Array.from(body.matchAll(/\$(\d+)/g));
@@ -123,19 +123,23 @@ class MinoCompiler {
                 const exportPrefix = (this.emitExports || !!exportKw) ? 'export ' : '';
                 const isHtml = blockType === 'html';
                 const jsDocHeader = this.buildJsDocForAssignment(varName, isHtml, explicitParams, hasPositional || this.emitFunctions || (!!explicitParams && explicitParams.trim().length > 0), params);
+                let bodyEsc = body.replace(/\\/g, '\\\\').replace(/`/g, '\\`');
+                bodyEsc = bodyEsc.replace(/\$\$\{/g, '${');
                 if (explicitParams && explicitParams.trim().length > 0) {
                     // Allow explicit params; keep as arrow with those params
-                    const compiled = `${jsDocHeader}${exportPrefix}const ${varName} = (${explicitParams.trim()}) => \`${body}\`;`;
+                    const compiled = jsDocHeader + exportPrefix + 'const ' + varName + ' = (' + explicitParams.trim() + ') => ' + '`' + bodyEsc + '`;';
                     output += compiled;
                 }
                 else if (hasPositional || this.emitFunctions) {
                     // Use rest args and replace $n with args[n]
-                    body = body.replace(/\$(\d+)/g, (_m, d) => `\${${'args'}[${Number(d)}] ?? ''}`);
-                    const compiled = `${jsDocHeader}${exportPrefix}const ${varName} = (...args) => \`${body}\`;`;
+                    const bodyPos = body.replace(/\$(\d+)/g, (_m, d) => '${args[' + Number(d) + '] ?? \'\'}');
+                    let bodyPosEsc = bodyPos.replace(/\\/g, '\\\\').replace(/`/g, '\\`');
+                    bodyPosEsc = bodyPosEsc.replace(/\$\$\{/g, '${');
+                    const compiled = jsDocHeader + exportPrefix + 'const ' + varName + ' = (...args) => ' + '`' + bodyPosEsc + '`;';
                     output += compiled;
                 }
                 else {
-                    const compiled = `${jsDocHeader}${exportPrefix}const ${varName} = \`${body}\`;`;
+                    const compiled = jsDocHeader + exportPrefix + 'const ' + varName + ' = ' + '`' + bodyEsc + '`;';
                     output += compiled;
                 }
             }
@@ -148,9 +152,11 @@ class MinoCompiler {
                 }
                 if (/\$\{\s*\.\.\./.test(body)) {
                     usedFlattenHelper = true;
-                    body = body.replace(/\$\{\s*\.\.\.([\s\S]*?)\}/g, (_m, expr) => `\${${'__mino_flat'}(${expr.trim()})}`);
+                    body = body.replace(/\$\{\s*\.\.\.([\s\S]*?)\}/g, (_m, expr) => '${' + '__mino_flat' + '(' + expr.trim() + ')}');
                 }
-                const compiled = `\`${body}\``;
+                let bodyEsc = body.replace(/\\/g, '\\\\').replace(/`/g, '\\`');
+                bodyEsc = bodyEsc.replace(/\$\$\{/g, '${');
+                const compiled = '`' + bodyEsc + '`';
                 output += compiled;
             }
             index = endIndex + 1;
